@@ -39,7 +39,7 @@ Practical Exercises
 
 SQL Projects
 
-# Day 01: SQL Fundamentals
+# Day 00: SQL Fundamentals
 
 ## Objective
 
@@ -106,9 +106,3 @@ These fundamentals provide the foundation for learning PostgreSQL, MySQL, databa
 ## Learning Approach
 
 SQL will be covered gradually, starting with relational database concepts and basic queries before progressing toward advanced queries, joins, subqueries, CTEs, window functions, database design, indexing, transactions, optimization, and PostgreSQL.
-
-## Day 01 Completed
-
-**Focus:** Introduction to SQL and Relational Databases
-
-**Next:** Continue with the next concepts in SQL.
