@@ -2440,9 +2440,7 @@ This schema can be expanded throughout the SQL learning journey.
 
 ---
 
-# 75. Questions You Should Now Be Able to Answer
-
-You should be able to explain:
+# 75. Questions:
 
 1. What is data?
 2. Why do databases exist?
