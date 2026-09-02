@@ -1,4406 +1,3282 @@
 # Database Fundamentals
 
-## Purpose
+## Overview
 
-This document contains a complete Python-based study script for understanding Database Fundamentals from basic concepts through advanced database concepts.
+This learning exercise covers the fundamental concepts of databases, relational database systems, SQL, database design, data integrity, transactions, concurrency, indexing, performance, security, scalability, and modern database architecture.
 
-The Python examples use SQLite because it is available through Python's standard library and allows database concepts to be demonstrated without installing a separate database server.
+The practical code was used as a way to understand how these concepts behave in an actual database environment. The objective was not only to learn database terminology, but to understand how data is structured, connected, queried, protected, modified, and maintained throughout the lifecycle of an application.
+
+The concepts covered range from basic database terminology to advanced topics such as transaction isolation, query optimization, replication, partitioning, sharding, distributed databases, OLTP, OLAP, and application-database architecture.
 
 ---
 
-# Part 1: Database Fundamentals Python Script
-
-```python
-"""
-DATABASE FUNDAMENTALS
-=====================
-
-A comprehensive academic and practical study script covering:
-
-1. What databases are
-2. Database terminology
-3. DBMS and RDBMS
-4. Relational data model
-5. Tables, rows, columns
-6. Primary keys
-7. Foreign keys
-8. Candidate keys
-9. Composite keys
-10. Relationships
-11. CRUD operations
-12. SQL fundamentals
-13. SELECT
-14. WHERE
-15. ORDER BY
-16. GROUP BY
-17. HAVING
-18. DISTINCT
-19. Aggregate functions
-20. NULL
-21. SQL operators
-22. Joins
-23. Subqueries
-24. Common Table Expressions
-25. Recursive CTEs
-26. Views
-27. Constraints
-28. Normalization
-29. Functional dependencies
-30. Database anomalies
-31. Transactions
-32. ACID properties
-33. COMMIT
-34. ROLLBACK
-35. SAVEPOINT
-36. Concurrency
-37. Locking
-38. Deadlocks
-39. Isolation levels
-40. Indexes
-41. Query optimization
-42. Query plans
-43. Window functions
-44. Set operations
-45. UPSERT
-46. Triggers
-47. Audit trails
-48. JSON and semi-structured data
-49. OLTP
-50. OLAP
-51. Fact and dimension tables
-52. ETL and ELT
-53. Data warehouses
-54. Database security
-55. SQL injection
-56. Parameterized queries
-57. Backup and recovery
-58. Replication
-59. Partitioning
-60. Sharding
-61. Distributed databases
-62. Relational vs NoSQL databases
-63. ORMs
-64. Connection pooling
-65. N+1 query problem
-66. Database migrations
-67. Idempotency
-68. Historical data
-69. Derived data
-70. Data integrity
-71. Cardinality
-72. Selectivity
-73. Covering indexes
-74. Database architecture
-75. Database design
-76. E-commerce database example
-77. Reporting queries
-78. Practical database reasoning
-79. Advanced terminology
-"""
-
-import sqlite3
-from contextlib import closing
-from datetime import datetime
-
-
-# ============================================================
-# SECTION 1: BASIC DATABASE CONCEPT
-# ============================================================
-
-print("=" * 80)
-print("DATABASE FUNDAMENTALS")
-print("=" * 80)
+# 1. Understanding Databases
 
-print("""
-A database is an organized collection of data that can be stored,
-retrieved, modified, protected, and managed systematically.
+A database is an organized system for storing and managing data.
 
-A Database Management System (DBMS) is software responsible for
-managing databases.
+The fundamental purpose of a database is not simply to store information. A database provides a structured environment in which information can be created, retrieved, modified, validated, related, secured, and recovered.
 
-Examples of database systems include:
+A database is particularly useful when an application needs to manage large amounts of structured information and support multiple users or processes at the same time.
 
-- PostgreSQL
-- MySQL
-- Microsoft SQL Server
-- Oracle Database
-- SQLite
-- MongoDB
-- Redis
-- Cassandra
+Examples of information commonly stored in databases include:
 
-A relational database stores information primarily in tables.
+- Customers
+- Employees
+- Products
+- Orders
+- Payments
+- Transactions
+- Inventory
+- Addresses
+- Courses
+- Students
+- Financial records
+- Application activity
 
-A table consists of:
+The learning exercise demonstrated that database design begins with understanding the information an application needs to store and the relationships among different types of information.
 
-- rows
-- columns
+---
 
-A row normally represents one record or entity instance.
+# 2. Database Management Systems
 
-A column represents an attribute of that entity.
-""")
+A Database Management System, commonly called a DBMS, is the software responsible for managing databases.
 
-# ============================================================
-# SECTION 2: DBMS VS RDBMS
-# ============================================================
+The DBMS provides mechanisms for:
 
-print("\n" + "=" * 80)
-print("DBMS VS RDBMS")
-print("=" * 80)
+- Creating databases and database objects
+- Storing information
+- Retrieving information
+- Modifying information
+- Enforcing constraints
+- Managing transactions
+- Controlling concurrent access
+- Providing security
+- Recovering from failures
+- Optimizing queries
+- Managing indexes
+- Supporting backup and recovery
 
-print("""
-DBMS means Database Management System.
+Examples of database management systems include PostgreSQL, MySQL, MariaDB, Oracle Database, Microsoft SQL Server, and SQLite.
 
-RDBMS means Relational Database Management System.
+The learning exercise used SQLite to demonstrate database concepts because it is lightweight and can be accessed directly through Python without requiring a separate database server.
 
-An RDBMS follows the relational model and organizes data into
-relations, which are represented as tables.
+---
 
-Important relational concepts include:
+# 3. Relational Database Fundamentals
 
-- tables
-- tuples
-- attributes
-- keys
-- relationships
-- constraints
-- relational operations
+A relational database organizes information into relations, which are commonly represented as tables.
 
-The relational model is based on mathematical set theory and
-relational algebra.
+A table consists of rows and columns.
 
-SQLite is a relational database system.
-""")
+A row represents an individual record, while a column represents an attribute of that record.
 
-# ============================================================
-# SECTION 3: CREATE DATABASE CONNECTION
-# ============================================================
+For example, a customer table may contain information such as:
 
-print("\n" + "=" * 80)
-print("CREATING A DATABASE")
-print("=" * 80)
+- Customer identifier
+- Customer name
+- Email address
+- City
+- Creation date
 
-connection = sqlite3.connect(":memory:")
+The relational model makes relationships between different tables explicit.
 
-print("""
-The database connection is created using sqlite3.connect().
+Instead of keeping all information inside one large structure, related concepts are separated into appropriate tables and connected using keys.
 
-The database is stored in memory in this example.
+---
 
-SQLite also supports file-based databases:
+# 4. Tables, Rows, and Columns
 
-sqlite3.connect("company.db")
+The learning exercise established the distinction between tables, rows, and columns.
 
-A connection represents the communication channel between the
-Python application and the database.
-""")
+A table represents a collection of related records.
 
-# Enable foreign key enforcement.
-connection.execute("PRAGMA foreign_keys = ON")
+A row represents one individual record.
 
-# ============================================================
-# SECTION 4: CREATE TABLES
-# ============================================================
+A column represents a specific attribute.
 
-print("\n" + "=" * 80)
-print("TABLE DESIGN")
-print("=" * 80)
+For example, in a customer database:
 
-connection.executescript("""
-CREATE TABLE departments (
-    department_id INTEGER PRIMARY KEY,
-    department_name TEXT NOT NULL UNIQUE
-);
+- The `customers` table represents customers.
+- One row represents one customer.
+- The `email` column represents the customer's email address.
 
-CREATE TABLE employees (
-    employee_id INTEGER PRIMARY KEY,
-    employee_name TEXT NOT NULL,
-    email TEXT UNIQUE,
-    salary REAL CHECK (salary >= 0),
-    department_id INTEGER,
-    manager_id INTEGER,
-    joining_date TEXT,
-    FOREIGN KEY (department_id)
-        REFERENCES departments(department_id),
-    FOREIGN KEY (manager_id)
-        REFERENCES employees(employee_id)
-);
+This distinction is fundamental because relational database operations work primarily by selecting, combining, filtering, grouping, and modifying rows and columns.
 
-CREATE TABLE projects (
-    project_id INTEGER PRIMARY KEY,
-    project_name TEXT NOT NULL,
-    budget REAL CHECK (budget >= 0)
-);
+---
 
-CREATE TABLE employee_projects (
-    employee_id INTEGER,
-    project_id INTEGER,
-    assigned_on TEXT NOT NULL,
-
-    PRIMARY KEY (employee_id, project_id),
+# 5. Database Schema
 
-    FOREIGN KEY (employee_id)
-        REFERENCES employees(employee_id),
-
-    FOREIGN KEY (project_id)
-        REFERENCES projects(project_id)
-);
-""")
-
-print("""
-The database contains four tables.
-
-departments
------------
-Stores department information.
-
-employees
----------
-Stores employee information.
-
-projects
---------
-Stores project information.
-
-employee_projects
------------------
-Connects employees and projects.
-
-The employee_projects table represents a many-to-many relationship.
-""")
-
-# ============================================================
-# SECTION 5: TABLE TERMINOLOGY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("TABLE TERMINOLOGY")
-print("=" * 80)
-
-print("""
-Table:
-    Collection of related records.
-
-Row:
-    One record in a table.
-
-Column:
-    An attribute of the records.
-
-Tuple:
-    Relational-model terminology for a row.
-
-Attribute:
-    Relational-model terminology for a column.
-
-Schema:
-    The structural definition of the database.
-
-Instance:
-    The actual data stored in the database at a particular time.
-
-Domain:
-    The set of valid values for an attribute.
-""")
-
-# ============================================================
-# SECTION 6: INSERT DATA
-# ============================================================
-
-print("\n" + "=" * 80)
-print("INSERTING DATA")
-print("=" * 80)
-
-departments = [
-    (1, "Engineering"),
-    (2, "Finance"),
-    (3, "Human Resources"),
-    (4, "Marketing")
-]
-
-connection.executemany(
-    """
-    INSERT INTO departments
-    (department_id, department_name)
-    VALUES (?, ?)
-    """,
-    departments
-)
-
-employees = [
-    (1, "Amit", "amit@example.com", 95000, 1, None, "2022-01-10"),
-    (2, "Priya", "priya@example.com", 85000, 1, 1, "2023-03-15"),
-    (3, "Rahul", "rahul@example.com", 70000, 1, 1, "2024-02-20"),
-    (4, "Neha", "neha@example.com", 90000, 2, None, "2021-06-01"),
-    (5, "Karan", "karan@example.com", 65000, 2, 4, "2024-05-10"),
-    (6, "Sneha", "sneha@example.com", 60000, 3, None, "2023-08-18"),
-    (7, "Vikas", "vikas@example.com", 72000, 4, None, "2022-11-11")
-]
-
-connection.executemany(
-    """
-    INSERT INTO employees
-    (
-        employee_id,
-        employee_name,
-        email,
-        salary,
-        department_id,
-        manager_id,
-        joining_date
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """,
-    employees
-)
-
-projects = [
-    (1, "Database Migration", 150000),
-    (2, "Mobile Application", 300000),
-    (3, "Analytics Platform", 500000)
-]
-
-connection.executemany(
-    """
-    INSERT INTO projects
-    (project_id, project_name, budget)
-    VALUES (?, ?, ?)
-    """,
-    projects
-)
-
-employee_projects = [
-    (1, 1, "2023-01-01"),
-    (2, 1, "2023-02-01"),
-    (2, 2, "2024-01-01"),
-    (3, 2, "2024-03-01"),
-    (4, 3, "2023-05-01"),
-    (5, 3, "2024-06-01")
-]
-
-connection.executemany(
-    """
-    INSERT INTO employee_projects
-    (employee_id, project_id, assigned_on)
-    VALUES (?, ?, ?)
-    """,
-    employee_projects
-)
-
-connection.commit()
-
-print("""
-INSERT adds records to a table.
-
-Parameterized queries use ? placeholders.
-
-This is preferable to constructing SQL by concatenating user input.
-""")
-
-# ============================================================
-# SECTION 7: SELECT
-# ============================================================
-
-print("\n" + "=" * 80)
-print("SELECT")
-print("=" * 80)
-
-rows = connection.execute(
-    "SELECT employee_id, employee_name, salary FROM employees"
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-SELECT retrieves data.
-
-SELECT * retrieves all columns.
-
-Explicitly naming columns is generally preferable because it makes
-queries clearer and avoids unintentionally retrieving unnecessary data.
-""")
-
-# ============================================================
-# SECTION 8: WHERE
-# ============================================================
-
-print("\n" + "=" * 80)
-print("WHERE")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT employee_name, salary
-    FROM employees
-    WHERE salary > ?
-    """,
-    (80000,)
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-WHERE filters rows before grouping and aggregation.
-
-Examples:
-
-WHERE salary > 80000
-WHERE department_id = 1
-WHERE salary BETWEEN 60000 AND 90000
-WHERE department_id IN (1, 2)
-WHERE employee_name LIKE 'A%'
-""")
-
-# ============================================================
-# SECTION 9: ORDER BY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("ORDER BY")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT employee_name, salary
-    FROM employees
-    ORDER BY salary DESC
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-ORDER BY sorts query results.
-
-ASC means ascending.
-
-DESC means descending.
-
-Ordering is applied to the result set and does not change the
-physical meaning of the underlying records.
-""")
-
-# ============================================================
-# SECTION 10: DISTINCT
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DISTINCT")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT DISTINCT department_id
-    FROM employees
-    """
-).fetchall()
-
-print(rows)
-
-print("""
-DISTINCT removes duplicate rows from the result.
-
-It should not be used as a generic method for hiding incorrect
-join logic because unnecessary DISTINCT operations may increase
-query cost and can hide data-model problems.
-""")
-
-# ============================================================
-# SECTION 11: UPDATE
-# ============================================================
-
-print("\n" + "=" * 80)
-print("UPDATE")
-print("=" * 80)
-
-connection.execute(
-    """
-    UPDATE employees
-    SET salary = salary * 1.05
-    WHERE employee_id = ?
-    """,
-    (2,)
-)
-
-connection.commit()
-
-print("""
-UPDATE modifies existing records.
+A database schema describes the structure of a database.
 
-A WHERE clause is important when only selected records should be
-modified.
-
-Without WHERE, every row can potentially be updated.
-""")
+It defines how data is organized and can include:
 
-# ============================================================
-# SECTION 12: DELETE
-# ============================================================
+- Tables
+- Columns
+- Data types
+- Primary keys
+- Foreign keys
+- Constraints
+- Indexes
+- Views
+- Functions
+- Procedures
+- Other database objects
 
-print("\n" + "=" * 80)
-print("DELETE")
-print("=" * 80)
+The schema represents the logical structure of the database rather than the individual values currently stored in it.
 
-connection.execute(
-    """
-    DELETE FROM employees
-    WHERE employee_id = ?
-    """,
-    (7,)
-)
+Understanding schemas is important because a well-designed schema provides a clear representation of the application's data model.
 
-connection.commit()
-
-print("""
-DELETE removes records.
-
-DELETE with a WHERE clause removes matching rows.
+---
 
-DELETE without WHERE can remove every row in a table.
+# 6. Data Models
 
-DROP TABLE removes the table structure itself.
+Different database systems use different approaches to representing data.
 
-TRUNCATE, available in many database systems, removes table data
-while retaining the table structure. SQLite does not implement
-TRUNCATE TABLE as a separate SQL command.
-""")
+Important database models include:
 
-# Reinsert employee 7 for later examples.
-connection.execute(
-    """
-    INSERT INTO employees
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """,
-    (7, "Vikas", "vikas@example.com", 72000, 4, None, "2022-11-11")
-)
+- Relational
+- Hierarchical
+- Network
+- Document
+- Key-value
+- Graph
+- Wide-column
+- Object-oriented
 
-connection.commit()
+The relational model was the primary focus of this learning exercise.
 
-# ============================================================
-# SECTION 13: SQL OPERATORS
-# ============================================================
+The exercise also introduced the conceptual differences between relational and non-relational databases and showed that different database models are designed around different workload requirements.
 
-print("\n" + "=" * 80)
-print("SQL OPERATORS")
-print("=" * 80)
+---
 
-print("""
-Comparison operators:
+# 7. SQL
 
-=
-<>
-!=
->
-<
->=
-<=
+SQL, or Structured Query Language, is the primary language used to interact with relational databases.
 
-Logical operators:
+SQL can be used for:
 
-AND
-OR
-NOT
+- Creating database structures
+- Inserting data
+- Retrieving data
+- Updating data
+- Deleting data
+- Defining constraints
+- Creating indexes
+- Managing transactions
+- Managing database permissions
 
-Range:
+One of the most important concepts learned is that SQL is primarily declarative.
 
-BETWEEN
+The developer describes the desired result, while the database engine determines an appropriate execution strategy.
 
-Membership:
+This separation between the logical request and the physical execution is one of the foundations of modern database systems.
 
-IN
+---
 
-Pattern matching:
+# 8. SQL Command Categories
 
-LIKE
+SQL commands can be understood through several broad categories.
 
-NULL checks:
+## Data Definition Language
 
-IS NULL
-IS NOT NULL
+Data Definition Language is concerned with database structures.
 
-A common mistake is writing:
+It includes operations for creating, modifying, and removing objects such as tables.
 
-salary = NULL
+## Data Manipulation Language
 
-The correct form is:
+Data Manipulation Language deals with modifying stored records.
 
-salary IS NULL
+It includes inserting, updating, and deleting information.
 
-NULL represents missing, unknown, or inapplicable information.
-It does not behave like an ordinary value.
-""")
+## Data Query Language
 
-# ============================================================
-# SECTION 14: NULL
-# ============================================================
+Data Query Language is primarily concerned with retrieving information from the database.
 
-print("\n" + "=" * 80)
-print("NULL AND THREE-VALUED LOGIC")
-print("=" * 80)
+The SELECT operation is the central component.
 
-rows = connection.execute(
-    """
-    SELECT employee_name, manager_id
-    FROM employees
-    WHERE manager_id IS NULL
-    """
-).fetchall()
+## Data Control Language
 
-print(rows)
+Data Control Language deals with database permissions and access control.
 
-print("""
-SQL logic involving NULL uses three logical states:
+## Transaction Control Language
 
-TRUE
-FALSE
-UNKNOWN
+Transaction Control Language is associated with transaction management, including committing and rolling back changes.
 
-For example:
+Understanding these categories provides a clearer picture of the different responsibilities handled through SQL.
 
-NULL = NULL
+---
 
-does not evaluate to TRUE.
+# 9. Database Tables and Data Types
 
-This is why SQL uses:
+Each database column has a defined data type.
 
-IS NULL
+Common categories include:
 
-and:
+- Integer values
+- Decimal values
+- Character strings
+- Boolean values
+- Dates
+- Times
+- Timestamps
+- Binary values
+- JSON or semi-structured values
 
-IS NOT NULL
+The choice of data type affects:
 
-NULL also affects aggregate functions.
+- Storage requirements
+- Valid values
+- Precision
+- Comparisons
+- Sorting
+- Indexing
+- Application behavior
 
-COUNT(column) ignores NULL values.
+Choosing appropriate data types is therefore part of database design rather than simply a syntactical decision.
 
-COUNT(*) counts rows regardless of NULL values in individual columns.
-""")
+---
 
-# ============================================================
-# SECTION 15: AGGREGATE FUNCTIONS
-# ============================================================
+# 10. Primary Keys
 
-print("\n" + "=" * 80)
-print("AGGREGATE FUNCTIONS")
-print("=" * 80)
+A primary key uniquely identifies records in a table.
 
-row = connection.execute(
-    """
-    SELECT
-        COUNT(*) AS employee_count,
-        AVG(salary) AS average_salary,
-        MIN(salary) AS minimum_salary,
-        MAX(salary) AS maximum_salary,
-        SUM(salary) AS total_salary
-    FROM employees
-    """
-).fetchone()
+The primary key provides identity to each row.
 
-print(row)
+A good primary key should provide a reliable and stable way to distinguish one record from another.
 
-print("""
-Important aggregate functions:
+The learning exercise demonstrated both simple primary keys and the concept of composite primary keys.
 
-COUNT()
-SUM()
-AVG()
-MIN()
-MAX()
+Primary keys are fundamental because relationships between tables frequently depend on them.
 
-Aggregate functions operate across multiple rows and produce
-calculated results.
-""")
+---
 
-# ============================================================
-# SECTION 16: GROUP BY
-# ============================================================
+# 11. Composite Keys
 
-print("\n" + "=" * 80)
-print("GROUP BY")
-print("=" * 80)
+A composite key consists of multiple columns that together identify a record.
 
-rows = connection.execute(
-    """
-    SELECT
-        department_id,
-        COUNT(*) AS employee_count,
-        AVG(salary) AS average_salary
-    FROM employees
-    GROUP BY department_id
-    ORDER BY department_id
-    """
-).fetchall()
+Composite keys are particularly useful when the uniqueness of a record depends on a combination of attributes.
 
-for row in rows:
-    print(row)
+For example, a relationship between students and courses can use the combination of student identity and course identity to uniquely represent an enrollment.
 
-print("""
-GROUP BY divides rows into groups based on one or more expressions.
+Composite keys are commonly encountered in junction or association tables.
 
-For example:
+---
 
-GROUP BY department_id
+# 12. Candidate Keys and Alternate Keys
 
-creates one group for each department.
-""")
+A candidate key is a minimal set of attributes capable of uniquely identifying a record.
 
-# ============================================================
-# SECTION 17: HAVING
-# ============================================================
+A table may have more than one candidate key.
 
-print("\n" + "=" * 80)
-print("HAVING")
-print("=" * 80)
+One candidate key can be selected as the primary key.
 
-rows = connection.execute(
-    """
-    SELECT
-        department_id,
-        COUNT(*) AS employee_count
-    FROM employees
-    GROUP BY department_id
-    HAVING COUNT(*) >= 2
-    """
-).fetchall()
+Other candidate keys can be maintained using uniqueness constraints.
 
-print(rows)
+This distinction helps separate the concept of uniqueness from the specific choice of primary identifier.
 
-print("""
-WHERE filters individual rows.
+---
+
+# 13. Surrogate Keys and Natural Keys
+
+A surrogate key is an artificial identifier created specifically for database records.
+
+Examples include generated numeric identifiers and UUIDs.
+
+A natural key is based on a real-world attribute that naturally identifies an entity.
+
+Examples can include:
+
+- Email address
+- ISBN
+- Government-issued business identifiers
+- Product codes
+
+Surrogate keys can provide stable identifiers even when real-world attributes change.
+
+Natural keys can carry business meaning but may be more difficult to maintain when the underlying business information changes.
+
+---
+
+# 14. Foreign Keys
+
+A foreign key represents a relationship between tables.
+
+A foreign key usually references a primary key or another candidate key in a related table.
+
+For example, an order can contain a customer identifier that refers to an existing customer.
+
+This creates a relationship between customers and orders.
+
+Foreign keys are essential for maintaining referential integrity.
+
+---
+
+# 15. Referential Integrity
+
+Referential integrity ensures that relationships between related records remain valid.
+
+For example, an order should not reference a customer that does not exist.
+
+Foreign key constraints help enforce this rule.
+
+The learning exercise demonstrated why referential integrity is important and how it prevents inconsistent relationships between tables.
+
+Without referential integrity, databases can accumulate orphaned records and invalid references.
+
+---
+
+# 16. Referential Actions
+
+Foreign key relationships can define behavior when referenced records are updated or deleted.
+
+Common behaviors include:
+
+- Cascade
+- Restrict
+- No action
+- Set null
+- Set default
+
+These options determine what happens to related records when their parent record changes.
+
+Cascading operations can be useful, but they must be designed carefully because one operation can affect many related records.
+
+---
+
+# 17. Database Constraints
+
+Constraints are rules enforced by the database.
+
+Important constraints include:
+
+- Primary key
+- Foreign key
+- Unique
+- Not null
+- Check
+- Default
+
+Constraints protect the integrity of stored information.
+
+The exercise demonstrated that validation should not exist only in application code.
+
+When an important business rule can be represented as a database constraint, enforcing it at the database level provides an additional layer of protection.
+
+---
+
+# 18. NOT NULL
+
+A NOT NULL constraint requires a value to exist for a particular column.
+
+This is useful when an attribute is mandatory.
+
+Examples include:
+
+- Required customer names
+- Required product names
+- Required identifiers
+- Required transaction information
+
+Using NOT NULL communicates an important assumption about the data model.
+
+---
+
+# 19. UNIQUE Constraints
+
+A UNIQUE constraint prevents duplicate values for a defined uniqueness rule.
+
+Email addresses are a common example.
+
+A database can therefore prevent two records from having the same value when uniqueness is a business requirement.
+
+The exact treatment of NULL values in unique constraints can vary between database systems.
+
+---
+
+# 20. CHECK Constraints
+
+CHECK constraints allow conditions to be enforced at the database level.
+
+Examples of useful business rules include:
+
+- Prices cannot be negative.
+- Quantities must be positive.
+- Age cannot be below a defined threshold.
+- Status must belong to an accepted set of values.
+
+CHECK constraints help ensure that invalid information cannot enter the database through an uncontrolled data-access path.
+
+---
+
+# 21. DEFAULT Values
+
+Default values automatically provide a value when one is not explicitly supplied.
+
+Examples include:
+
+- Default order status
+- Creation timestamp
+- Default boolean state
+- Default quantity
+
+Defaults reduce repetitive application logic and establish consistent initial values.
+
+---
+
+# 22. CRUD Operations
+
+CRUD represents four fundamental operations:
+
+- Create
+- Read
+- Update
+- Delete
+
+These operations correspond closely to the basic lifecycle of database records.
+
+Create adds information.
+
+Read retrieves information.
+
+Update changes information.
+
+Delete removes information.
+
+Understanding CRUD provides the foundation for understanding application-database interaction.
+
+---
+
+# 23. Data Retrieval
+
+Data retrieval is primarily performed through queries.
+
+Queries can:
+
+- Select particular columns
+- Filter rows
+- Sort results
+- Group records
+- Aggregate values
+- Join tables
+- Use subqueries
+- Use common table expressions
+- Apply window functions
+
+The exercise demonstrated how simple retrieval operations develop into complex analytical queries.
+
+---
+
+# 24. Filtering Data
+
+Filtering allows only records satisfying a condition to be returned.
+
+Common filtering concepts include:
+
+- Equality
+- Inequality
+- Greater than
+- Less than
+- Ranges
+- Membership in a set
+- Pattern matching
+- Logical combinations
+
+Filtering is fundamental because most real-world queries do not require every row in a table.
+
+---
+
+# 25. Logical Operators
+
+Database conditions can be combined using logical operators.
+
+The major operators are:
+
+- AND
+- OR
+- NOT
+
+Understanding operator precedence is important because complex conditions can produce unexpected results if their logical structure is misunderstood.
+
+Parentheses can be used to make the intended logic explicit.
+
+---
+
+# 26. NULL and Three-Valued Logic
+
+NULL is one of the most important and frequently misunderstood database concepts.
+
+NULL does not simply mean zero.
+
+It does not necessarily mean an empty string.
+
+It represents the absence of a value.
+
+SQL uses three-valued logic:
+
+- TRUE
+- FALSE
+- UNKNOWN
+
+This means comparisons involving NULL do not behave like ordinary comparisons.
+
+NULL must generally be tested using dedicated NULL predicates.
+
+Understanding NULL is essential for writing correct database queries.
+
+---
+
+# 27. DISTINCT
+
+DISTINCT removes duplicate result combinations from a query.
+
+It is useful when the objective is to obtain unique values rather than every individual occurrence.
+
+The meaning of uniqueness depends on all columns included in the selected result.
+
+---
+
+# 28. Sorting and Ordering
+
+Database query results do not inherently have a guaranteed meaningful order unless an explicit ordering requirement is specified.
+
+ORDER BY is used when a particular ordering is required.
+
+Sorting can be ascending or descending.
+
+Ordering becomes particularly important for:
+
+- Reports
+- Ranking
+- Pagination
+- Time-based data
+- Top-N queries
+- Analytical operations
+
+---
+
+# 29. Pagination
+
+Pagination limits the amount of data returned to an application at one time.
+
+Offset-based pagination is simple but can become inefficient for very large datasets.
+
+Keyset or cursor-based pagination can provide better performance for certain large-scale workloads because it avoids repeatedly processing large numbers of skipped rows.
+
+Pagination is therefore both an application design and database performance concern.
+
+---
+
+# 30. Joins
+
+Joins combine information from multiple tables.
+
+Important join types include:
+
+- Inner join
+- Left join
+- Right join
+- Full outer join
+- Cross join
+- Self join
+
+Joins are central to relational database systems because related information is often intentionally stored in separate tables.
+
+---
+
+# 31. INNER JOIN
+
+An inner join returns records where the join condition matches between the participating tables.
+
+It is useful when only related records are required.
+
+For example, joining customers with orders can return customers who have matching orders.
+
+---
+
+# 32. LEFT JOIN
+
+A left join preserves all records from the left table.
+
+If a matching record does not exist in the right table, the right-side values are represented as NULL.
+
+This makes left joins useful for questions such as:
+
+- Which customers have no orders?
+- Which products have never been sold?
+- Which employees have no assigned department?
+
+---
+
+# 33. RIGHT JOIN and FULL OUTER JOIN
+
+A right join preserves all records from the right table.
+
+A full outer join preserves unmatched records from both sides as well as matching records.
+
+Not every database system provides identical support for all join types.
+
+Understanding the logical behavior of each join is more important than memorizing syntax.
+
+---
+
+# 34. CROSS JOIN
+
+A cross join creates a Cartesian product between two sets of rows.
+
+If one table contains three records and another contains four records, the result can contain twelve combinations.
+
+Cross joins are useful in certain analytical and combinational problems but can produce extremely large results if used unintentionally.
+
+---
+
+# 35. SELF JOIN
+
+A self join occurs when a table is joined with itself.
+
+This is useful for hierarchical relationships.
+
+Examples include:
+
+- Employees and managers
+- Parent and child categories
+- Organizational structures
+- Referral relationships
+
+A self join allows different rows in the same table to be treated as related entities.
+
+---
+
+# 36. Join Cardinality
+
+Join cardinality describes how many rows can be produced when records from tables are combined.
+
+A one-to-many relationship can cause one row from one table to appear multiple times in the result.
+
+Understanding cardinality is essential for avoiding accidental duplicate results.
+
+Many incorrect aggregation queries are actually caused by misunderstanding join cardinality.
+
+---
+
+# 37. Aggregation
+
+Aggregation summarizes multiple rows.
+
+Common aggregate operations include:
+
+- Count
+- Sum
+- Average
+- Minimum
+- Maximum
+
+Aggregation is commonly used in:
+
+- Reporting
+- Financial calculations
+- Business intelligence
+- Statistical analysis
+- Operational dashboards
+
+---
+
+# 38. GROUP BY
+
+GROUP BY divides records into logical groups before aggregation.
+
+For example, employee records can be grouped by department to calculate the number of employees or average salary for each department.
+
+GROUP BY changes the shape of the result because multiple source records can become one result record per group.
+
+---
+
+# 39. HAVING
 
 HAVING filters groups after aggregation.
 
-Conceptually:
+The distinction between WHERE and HAVING is important.
 
-FROM
-WHERE
-GROUP BY
-HAVING
-SELECT
-ORDER BY
+WHERE filters individual rows before grouping.
 
-This is a simplified representation of SQL's logical processing
-order. Actual database execution may use a different physical plan.
-""")
+HAVING filters groups after aggregation.
 
-# ============================================================
-# SECTION 18: PRIMARY KEY
-# ============================================================
+This difference becomes especially important when working with aggregate functions.
 
-print("\n" + "=" * 80)
-print("PRIMARY KEY")
-print("=" * 80)
+---
 
-print("""
-A primary key uniquely identifies a row.
+# 40. Subqueries
 
-Characteristics normally associated with a primary key:
+A subquery is a query contained inside another query.
 
-- uniqueness
-- non-nullability
-- stable identity
-- row identification
+Subqueries can be used to:
 
-Example:
+- Compare against calculated values
+- Test for existence
+- Filter using another query
+- Retrieve related information
+- Build intermediate logic
 
-employee_id INTEGER PRIMARY KEY
+Subqueries provide a way to express complex relationships between query operations.
 
-A table has one primary key constraint, although that primary key
-can contain multiple columns.
-""")
+---
 
-# ============================================================
-# SECTION 19: COMPOSITE KEY
-# ============================================================
+# 41. Correlated Subqueries
 
-print("\n" + "=" * 80)
-print("COMPOSITE PRIMARY KEY")
-print("=" * 80)
+A correlated subquery depends on values from the outer query.
 
-print("""
-employee_projects uses:
+This allows each outer row to influence the inner query.
 
-PRIMARY KEY (employee_id, project_id)
+Correlated subqueries are powerful but can sometimes result in inefficient execution depending on the database engine and query structure.
 
-This is a composite key.
+Equivalent joins or window functions may sometimes provide a better execution strategy.
 
-Neither employee_id alone nor project_id alone identifies an
-assignment.
+---
 
-The combination identifies one employee-project relationship.
-""")
+# 42. EXISTS and NOT EXISTS
 
-# ============================================================
-# SECTION 20: CANDIDATE KEYS
-# ============================================================
+EXISTS checks whether a related record exists.
 
-print("\n" + "=" * 80)
-print("KEY TYPES")
-print("=" * 80)
+NOT EXISTS checks whether no matching record exists.
 
-print("""
-Super key:
-    Any set of attributes that uniquely identifies a row.
+These operations are particularly useful for questions involving the existence or absence of related data.
 
-Candidate key:
-    A minimal super key.
+They form an important class of anti-join and semi-join patterns.
 
-Primary key:
-    The candidate key selected as the principal identifier.
+---
 
-Alternate key:
-    A candidate key not selected as the primary key.
+# 43. Common Table Expressions
 
-Foreign key:
-    Attribute(s) referencing a key in another table.
+Common Table Expressions, or CTEs, provide a way to define named intermediate query results.
 
-Composite key:
-    Key consisting of multiple attributes.
+They can improve the readability and organization of complex queries.
 
-Surrogate key:
-    Artificial identifier such as an auto-generated integer.
+CTEs are useful for:
 
-Natural key:
-    Identifier that has meaning in the business domain, such as
-    a government-issued registration number.
-""")
+- Breaking complex queries into logical stages
+- Reusing intermediate results
+- Recursive queries
+- Hierarchical data processing
 
-# ============================================================
-# SECTION 21: FOREIGN KEY
-# ============================================================
+They are primarily a query organization mechanism rather than automatically a performance optimization.
 
-print("\n" + "=" * 80)
-print("FOREIGN KEYS")
-print("=" * 80)
-
-print("""
-A foreign key establishes a relationship between tables.
-
-employees.department_id references:
-
-departments.department_id
-
-The foreign key helps enforce referential integrity.
-
-For example, an employee cannot normally reference a department
-that does not exist when foreign-key enforcement is enabled.
-""")
-
-# ============================================================
-# SECTION 22: RELATIONSHIPS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("CARDINALITY AND RELATIONSHIPS")
-print("=" * 80)
-
-print("""
-One-to-one:
-    One record corresponds to at most one record in another table.
-
-One-to-many:
-    One department can have many employees.
-
-Many-to-many:
-    Many employees can work on many projects.
-
-Many-to-many relationships are normally represented through a
-junction or associative table.
-
-Here:
-
-employees
-    |
-    |
-employee_projects
-    |
-    |
-projects
-""")
+---
 
-# ============================================================
-# SECTION 23: INNER JOIN
-# ============================================================
+# 44. Recursive Queries
 
-print("\n" + "=" * 80)
-print("INNER JOIN")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT
-        e.employee_name,
-        d.department_name
-    FROM employees AS e
-    INNER JOIN departments AS d
-        ON e.department_id = d.department_id
-    ORDER BY e.employee_id
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-INNER JOIN returns rows where the join condition matches.
-
-Aliases such as e and d make multi-table queries easier to read.
-""")
-
-# ============================================================
-# SECTION 24: LEFT JOIN
-# ============================================================
-
-print("\n" + "=" * 80)
-print("LEFT JOIN")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT
-        d.department_name,
-        e.employee_name
-    FROM departments AS d
-    LEFT JOIN employees AS e
-        ON d.department_id = e.department_id
-    ORDER BY d.department_id
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-LEFT JOIN preserves every row from the left table.
-
-If there is no matching row on the right side, right-side columns
-become NULL.
-
-LEFT JOIN is especially useful for finding entities that do not
-have related records.
-""")
-
-# ============================================================
-# SECTION 25: FINDING RECORDS WITHOUT MATCHES
-# ============================================================
-
-print("\n" + "=" * 80)
-print("ANTI-JOIN PATTERN")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT
-        d.department_name
-    FROM departments AS d
-    LEFT JOIN employees AS e
-        ON d.department_id = e.department_id
-    WHERE e.employee_id IS NULL
-    """
-).fetchall()
-
-print(rows)
-
-print("""
-This is a common anti-join pattern.
-
-It identifies departments without employees.
-
-Another common approach is:
-
-WHERE NOT EXISTS (...)
-
-NOT EXISTS is often clearer when the relationship logic is complex.
-""")
-
-# ============================================================
-# SECTION 26: MANY-TO-MANY JOIN
-# ============================================================
-
-print("\n" + "=" * 80)
-print("MANY-TO-MANY JOIN")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT
-        e.employee_name,
-        p.project_name
-    FROM employees AS e
-    JOIN employee_projects AS ep
-        ON e.employee_id = ep.employee_id
-    JOIN projects AS p
-        ON ep.project_id = p.project_id
-    ORDER BY e.employee_name
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-The junction table converts a many-to-many relationship into
-two one-to-many relationships.
-""")
-
-# ============================================================
-# SECTION 27: SELF JOIN
-# ============================================================
-
-print("\n" + "=" * 80)
-print("SELF JOIN")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT
-        e.employee_name AS employee,
-        m.employee_name AS manager
-    FROM employees AS e
-    LEFT JOIN employees AS m
-        ON e.manager_id = m.employee_id
-    ORDER BY e.employee_id
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-A self join joins a table to itself.
-
-It is useful for hierarchical structures such as:
-
-employee -> manager
-category -> parent category
-folder -> parent folder
-employee -> supervisor
-""")
-
-# ============================================================
-# SECTION 28: SUBQUERY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("SUBQUERIES")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT employee_name, salary
-    FROM employees
-    WHERE salary >
-        (
-            SELECT AVG(salary)
-            FROM employees
-        )
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-A subquery is a query nested inside another query.
-
-Subqueries can appear in:
-
-- SELECT
-- FROM
-- WHERE
-- HAVING
-
-A subquery may be scalar, correlated, or table-valued depending
-on its position and structure.
-""")
-
-# ============================================================
-# SECTION 29: EXISTS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("EXISTS")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT employee_name
-    FROM employees AS e
-    WHERE EXISTS (
-        SELECT 1
-        FROM employee_projects AS ep
-        WHERE ep.employee_id = e.employee_id
-    )
-    """
-).fetchall()
-
-print(rows)
-
-print("""
-EXISTS checks whether at least one matching row exists.
-
-It does not need to return the matching row's data.
-
-EXISTS is useful for relationship-based conditions.
-""")
-
-# ============================================================
-# SECTION 30: COMMON TABLE EXPRESSIONS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("COMMON TABLE EXPRESSIONS")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    WITH department_stats AS (
-        SELECT
-            department_id,
-            AVG(salary) AS average_salary
-        FROM employees
-        GROUP BY department_id
-    )
-    SELECT
-        d.department_name,
-        ds.average_salary
-    FROM department_stats AS ds
-    JOIN departments AS d
-        ON d.department_id = ds.department_id
-    ORDER BY ds.average_salary DESC
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-A Common Table Expression, or CTE, is introduced with WITH.
-
-CTEs can improve readability by giving a complex intermediate
-result a name.
-
-A CTE is normally scoped to a single SQL statement.
-""")
-
-# ============================================================
-# SECTION 31: RECURSIVE CTE
-# ============================================================
-
-print("\n" + "=" * 80)
-print("RECURSIVE CTE")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    WITH RECURSIVE numbers(n) AS (
-        SELECT 1
-        UNION ALL
-        SELECT n + 1
-        FROM numbers
-        WHERE n < 5
-    )
-    SELECT n
-    FROM numbers
-    """
-).fetchall()
-
-print(rows)
-
-print("""
-Recursive CTEs contain:
-
-1. Anchor query
-2. Recursive query
-
-They are useful for hierarchical and graph-like structures.
-
-Examples:
-
-- organization charts
-- category trees
-- folder structures
-- dependency graphs
-- bill of materials
-""")
-
-# ============================================================
-# SECTION 32: VIEWS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("VIEWS")
-print("=" * 80)
-
-connection.execute(
-    """
-    CREATE VIEW employee_department_view AS
-    SELECT
-        e.employee_id,
-        e.employee_name,
-        e.salary,
-        d.department_name
-    FROM employees AS e
-    JOIN departments AS d
-        ON e.department_id = d.department_id
-    """
-)
-
-rows = connection.execute(
-    """
-    SELECT *
-    FROM employee_department_view
-    ORDER BY employee_id
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-A view is a stored query definition.
+Recursive queries can process hierarchical structures.
+
+Examples include:
+
+- Organization charts
+- Folder structures
+- Category trees
+- Dependency relationships
+- Parent-child hierarchies
+
+Recursive querying is especially useful when the depth of the hierarchy is not known in advance.
+
+---
+
+# 45. Set Operations
+
+SQL supports operations that combine result sets.
+
+Important set operations include:
+
+- UNION
+- UNION ALL
+- INTERSECT
+- EXCEPT
+
+UNION removes duplicate result rows.
+
+UNION ALL preserves duplicates and can therefore avoid the additional work required for duplicate elimination.
+
+Understanding set operations provides another way to reason about query results mathematically.
+
+---
+
+# 46. Views
+
+A view is a logical representation of a query.
 
 Views can provide:
 
-- abstraction
-- reusable query logic
-- simplified reporting interfaces
-- controlled exposure of columns
+- Abstraction
+- Reusable query definitions
+- Simplified interfaces
+- Controlled access to selected data
 
-A normal view generally does not store a separate copy of the
-underlying result.
+A view does not necessarily store its result physically.
 
-Materialized views, supported by some database systems, physically
-store query results and must be refreshed.
-""")
+It can instead represent a query that is evaluated when accessed.
 
-# ============================================================
-# SECTION 33: CONSTRAINTS
-# ============================================================
+---
 
-print("\n" + "=" * 80)
-print("DATABASE CONSTRAINTS")
-print("=" * 80)
+# 47. Materialized Views
 
-print("""
-Constraints protect data integrity.
+A materialized view stores the result of a query physically.
 
-Common constraints:
+This can improve performance for expensive and frequently repeated analytical operations.
 
-PRIMARY KEY
-FOREIGN KEY
-UNIQUE
-NOT NULL
-CHECK
-DEFAULT
+The trade-off is that materialized data must be refreshed when underlying information changes.
 
-Example:
+Materialized views therefore exchange freshness and maintenance cost for faster access.
 
-salary REAL CHECK (salary >= 0)
+---
 
-The database itself rejects invalid salary values.
+# 48. Database Normalization
 
-Constraints should be treated as part of the data model rather
-than relying exclusively on application-level validation.
-""")
+Normalization is a database design technique used to reduce unnecessary redundancy and dependency problems.
 
-# ============================================================
-# SECTION 34: UNIQUE
-# ============================================================
+Important normal forms include:
 
-print("\n" + "=" * 80)
-print("UNIQUE CONSTRAINT")
-print("=" * 80)
+- First Normal Form
+- Second Normal Form
+- Third Normal Form
+- Boyce-Codd Normal Form
+- Fourth Normal Form
+- Fifth Normal Form
 
-print("""
-The email column is UNIQUE.
+Normalization is not simply about creating more tables.
 
-This means two rows cannot normally contain the same non-null email.
+It is about organizing information according to dependency and relational principles.
 
-UNIQUE is different from PRIMARY KEY.
+---
 
-A table can have multiple UNIQUE constraints.
+# 49. First Normal Form
 
-A table has one primary key constraint.
-""")
+First Normal Form is concerned with atomic representation of values according to the chosen relational design.
 
-# ============================================================
-# SECTION 35: NORMALIZATION
-# ============================================================
+A column should not normally contain an uncontrolled collection of independent values.
 
-print("\n" + "=" * 80)
-print("DATABASE NORMALIZATION")
-print("=" * 80)
+For example, storing several unrelated course names inside one field makes querying, validation, indexing, and relationship management more difficult.
 
-print("""
-Normalization is the systematic organization of relational data
-to reduce redundancy and undesirable dependencies.
+A properly structured relational design represents individual values in a form that can be addressed independently.
 
-Important normal forms:
+---
 
-First Normal Form (1NF)
-----------------------
+# 50. Second Normal Form
 
-Values should be atomic with respect to the chosen relational
-design.
+Second Normal Form concerns partial dependencies on part of a composite key.
 
-Instead of:
+If a table uses a composite key and an attribute depends only on one component of that key, the design contains a partial dependency.
 
-employee_id | skills
-1           | Python, SQL, Java
+Separating the dependent information into an appropriate table can remove this problem.
 
-a normalized design may use:
+---
 
-employee
-skill
-employee_skill
+# 51. Third Normal Form
 
-Second Normal Form (2NF)
-------------------------
+Third Normal Form addresses transitive dependencies.
 
-The relation must satisfy 1NF and every non-key attribute must
-depend on the whole candidate key.
+If one non-key attribute determines another non-key attribute, information may be unnecessarily duplicated.
 
-This is particularly important for composite keys.
+Separating those dependencies helps ensure that each fact is stored in an appropriate location.
 
-Third Normal Form (3NF)
------------------------
+---
 
-The relation must satisfy 2NF and non-key attributes should not
-depend transitively on another non-key attribute.
+# 52. Boyce-Codd Normal Form
 
-Boyce-Codd Normal Form (BCNF)
------------------------------
+Boyce-Codd Normal Form is stricter than Third Normal Form.
 
-A stronger version of 3NF where every determinant is a candidate key.
+It requires determinants to correspond to candidate keys.
 
-Higher normal forms include:
+BCNF becomes relevant in schemas where complex candidate-key relationships can still produce anomalies even after applying conventional 3NF reasoning.
 
-4NF
-5NF
+---
 
-These address increasingly complex dependency structures.
-""")
+# 53. Database Anomalies
 
-# ============================================================
-# SECTION 36: INSERTION ANOMALY
-# ============================================================
+Poor database design can lead to several anomalies.
 
-print("\n" + "=" * 80)
-print("DATABASE ANOMALIES")
-print("=" * 80)
+## Insertion Anomaly
 
-print("""
-Poorly designed tables can produce anomalies.
+A record cannot be inserted without unrelated information.
 
-Insertion anomaly:
-    It may be impossible to insert one fact without another unrelated
-    fact.
+## Update Anomaly
 
-Update anomaly:
-    The same fact exists in multiple places and must be updated
-    consistently.
+The same fact is duplicated across multiple records and must be updated consistently.
 
-Deletion anomaly:
-    Deleting one fact accidentally removes another useful fact.
+## Deletion Anomaly
 
-Normalization attempts to reduce these problems.
-""")
+Deleting one record unintentionally removes information about another concept.
 
-# ============================================================
-# SECTION 37: FUNCTIONAL DEPENDENCY
-# ============================================================
+Normalization helps reduce these anomalies.
 
-print("\n" + "=" * 80)
-print("FUNCTIONAL DEPENDENCY")
-print("=" * 80)
+---
 
-print("""
-A functional dependency describes a relationship where one attribute
-or set of attributes determines another.
+# 54. Denormalization
 
-Notation:
+Denormalization intentionally introduces redundancy.
 
-A -> B
+It may be used to improve:
 
-means:
+- Read performance
+- Reporting performance
+- Query simplicity
+- Access speed
+- Application response time
 
-If two rows have the same A value, they must have the same B value.
+Denormalization is a deliberate engineering decision.
 
-Example:
+The duplicated information creates a consistency responsibility that must be managed.
 
-employee_id -> employee_name
+---
 
-because employee_id identifies one employee.
+# 55. Transactions
 
-Functional dependencies are fundamental to normalization.
-""")
+A transaction represents a logical unit of database work.
 
-# ============================================================
-# SECTION 38: TRANSACTIONS
-# ============================================================
+Transactions are important when several operations must succeed or fail together.
 
-print("\n" + "=" * 80)
-print("TRANSACTIONS")
-print("=" * 80)
+For example, a financial transfer can involve:
 
-print("""
-A transaction is a logical unit of work.
+- Decreasing one account balance
+- Increasing another account balance
 
-A transaction may contain multiple database operations.
+If only one operation succeeds, the database can become inconsistent.
 
-The goal is to ensure that related operations behave as one
-consistent unit.
+A transaction allows these operations to be treated as one logical unit.
 
-Typical transaction flow:
+---
 
-BEGIN
-    operation 1
-    operation 2
-    operation 3
-COMMIT
+# 56. ACID Properties
 
-If something goes wrong:
+ACID represents four important transaction properties:
 
-ROLLBACK
-""")
+- Atomicity
+- Consistency
+- Isolation
+- Durability
 
-connection.execute(
-    """
-    CREATE TABLE accounts (
-        account_id INTEGER PRIMARY KEY,
-        owner TEXT NOT NULL,
-        balance REAL NOT NULL CHECK(balance >= 0)
-    )
-    """
-)
+These properties provide a conceptual framework for understanding transactional behavior.
 
-connection.executemany(
-    """
-    INSERT INTO accounts
-    VALUES (?, ?, ?)
-    """,
-    [
-        (1, "A", 1000),
-        (2, "B", 500)
-    ]
-)
+---
 
-connection.commit()
+# 57. Atomicity
 
-# ============================================================
-# SECTION 39: TRANSACTION EXAMPLE
-# ============================================================
+Atomicity means that a transaction is treated as a logical unit.
 
-print("\n" + "=" * 80)
-print("TRANSACTION EXAMPLE")
-print("=" * 80)
+If a transaction fails before completion, its intended changes can be rolled back according to the database's transaction semantics.
 
-try:
-    connection.execute("BEGIN")
+This prevents partially completed transactional operations from becoming committed as though the complete operation succeeded.
 
-    connection.execute(
-        """
-        UPDATE accounts
-        SET balance = balance - ?
-        WHERE account_id = ?
-        """,
-        (100, 1)
-    )
+---
 
-    connection.execute(
-        """
-        UPDATE accounts
-        SET balance = balance + ?
-        WHERE account_id = ?
-        """,
-        (100, 2)
-    )
+# 58. Consistency
 
-    connection.commit()
+Consistency means that transactions preserve defined database rules and invariants.
 
-except Exception:
-    connection.rollback()
+Examples include:
 
-print(
-    connection.execute(
-        "SELECT * FROM accounts ORDER BY account_id"
-    ).fetchall()
-)
+- Valid foreign-key relationships
+- Unique values
+- Valid numeric ranges
+- Required fields
+- Business constraints
 
-# ============================================================
-# SECTION 40: ACID
-# ============================================================
+Consistency depends on the rules defined by the database and application.
 
-print("\n" + "=" * 80)
-print("ACID PROPERTIES")
-print("=" * 80)
+---
 
-print("""
-Atomicity
----------
+# 59. Isolation
 
-A transaction is treated as one logical unit.
+Isolation concerns how concurrent transactions interact.
 
-Either all required operations succeed or the transaction is
-rolled back.
+Multiple users can access the same database simultaneously.
 
-Consistency
------------
+The database must control what one transaction can observe about another transaction's work.
 
-A committed transaction should preserve defined database
-constraints and integrity rules.
+Different isolation levels provide different guarantees.
 
-Isolation
----------
+---
 
-Concurrent transactions should not interfere in ways that violate
-the selected isolation guarantees.
+# 60. Durability
 
-Durability
-----------
+Durability means that committed changes should survive failures according to the database system's durability guarantees.
 
-Once a transaction is committed, the database should preserve its
-effects despite ordinary failures, subject to the database system's
-durability guarantees and storage configuration.
-""")
+Database engines use mechanisms such as:
 
-# ============================================================
-# SECTION 41: SAVEPOINT
-# ============================================================
+- Transaction logs
+- Write-ahead logging
+- Persistent storage
+- Checkpoints
+- Recovery procedures
 
-print("\n" + "=" * 80)
-print("SAVEPOINT")
-print("=" * 80)
+to support durability.
 
-connection.execute("BEGIN")
+---
 
-connection.execute(
-    """
-    UPDATE accounts
-    SET balance = balance + 50
-    WHERE account_id = 1
-    """
-)
+# 61. COMMIT and ROLLBACK
 
-connection.execute("SAVEPOINT before_second_change")
+COMMIT finalizes a transaction.
 
-connection.execute(
-    """
-    UPDATE accounts
-    SET balance = balance - 25
-    WHERE account_id = 2
-    """
-)
+ROLLBACK reverses uncommitted changes.
 
-connection.execute("ROLLBACK TO before_second_change")
+These operations are fundamental to transaction management.
 
-connection.execute("RELEASE before_second_change")
+They allow applications to either complete a logical unit of work or return the database to an earlier transactional state.
 
-connection.commit()
+---
 
-print("""
-SAVEPOINT allows partial rollback inside a transaction.
+# 62. SAVEPOINT
 
-ROLLBACK TO savepoint
+A savepoint creates an intermediate point inside a transaction.
 
-undoes changes after that savepoint while keeping the transaction
-active.
-""")
+It allows part of a transaction to be rolled back without necessarily discarding all work performed since the transaction began.
 
-# ============================================================
-# SECTION 42: CONCURRENCY
-# ============================================================
+Savepoints are useful for complex transactional workflows where partial recovery is required.
 
-print("\n" + "=" * 80)
-print("CONCURRENCY")
-print("=" * 80)
+---
 
-print("""
-Concurrency means multiple transactions or database operations
-can occur during overlapping periods.
+# 63. Concurrency
 
-Concurrency introduces concerns such as:
+Database systems commonly serve many users at the same time.
 
-Dirty read
-----------
+Concurrency introduces the possibility that multiple transactions may read or modify the same information simultaneously.
 
-A transaction reads data written by another transaction that has
-not committed.
+The DBMS must coordinate these operations to maintain correct behavior.
 
-Non-repeatable read
--------------------
+Concurrency control can involve:
 
-The same row produces different values when read twice because
-another transaction committed an update.
+- Locks
+- MVCC
+- Isolation levels
+- Transaction ordering
+- Conflict detection
+- Serialization mechanisms
 
-Phantom read
-------------
+---
 
-A repeated query returns a different set of rows because another
-transaction inserted or deleted matching records.
+# 64. Dirty Reads
 
-Lost update
------------
+A dirty read occurs when one transaction observes data written by another transaction before that transaction commits.
 
-One update unintentionally overwrites another update.
+If the writing transaction later rolls back, the reader may have observed information that never became part of the committed database state.
 
-Different database systems and isolation levels provide different
-guarantees.
-""")
+This illustrates why transaction isolation matters.
 
-# ============================================================
-# SECTION 43: LOCKING
-# ============================================================
+---
 
-print("\n" + "=" * 80)
-print("LOCKING")
-print("=" * 80)
+# 65. Non-Repeatable Reads
 
-print("""
-Database systems use locking and other concurrency-control
-mechanisms to coordinate transactions.
+A non-repeatable read occurs when a transaction reads the same record more than once and obtains different committed values because another transaction changed the record between reads.
 
-Common conceptual lock categories include:
+This demonstrates that isolation is not simply about preventing corruption. It also determines what a transaction is allowed to observe.
 
-Shared lock:
-    Used for reading.
+---
 
-Exclusive lock:
-    Used for modifications.
+# 66. Phantom Reads
 
-The exact locking implementation depends on the database engine.
+A phantom read occurs when repeated execution of a range-based query produces a different set of rows because another transaction inserted or removed matching records.
 
-SQLite uses a different concurrency architecture from systems such
-as PostgreSQL and SQL Server, so locking terminology should not be
-assumed to behave identically across all database products.
-""")
+Phantom behavior becomes important when transactions operate over sets of rows rather than a single record.
 
-# ============================================================
-# SECTION 44: DEADLOCK
-# ============================================================
+---
 
-print("\n" + "=" * 80)
-print("DEADLOCK")
-print("=" * 80)
+# 67. Lost Updates
 
-print("""
-A deadlock occurs when transactions wait for each other indefinitely.
+A lost update can occur when two concurrent transactions read the same original value and then independently write changes, causing one update to overwrite another.
 
-Conceptual example:
+Concurrency control mechanisms are necessary to prevent or detect such situations.
 
-Transaction A locks Resource 1
-Transaction B locks Resource 2
+---
 
-Transaction A waits for Resource 2
-Transaction B waits for Resource 1
+# 68. Isolation Levels
 
-Neither transaction can proceed.
+Common SQL isolation levels include:
 
-Databases can detect deadlocks and abort one transaction.
+- Read Uncommitted
+- Read Committed
+- Repeatable Read
+- Serializable
 
-Application code should normally be prepared to retry transactions
-when the database reports retryable concurrency failures.
-""")
+Different database systems implement these isolation levels differently.
 
-# ============================================================
-# SECTION 45: INDEXES
-# ============================================================
+The isolation level represents a trade-off between concurrency, consistency guarantees, and performance.
 
-print("\n" + "=" * 80)
-print("INDEXES")
-print("=" * 80)
+---
 
-connection.execute(
-    """
-    CREATE INDEX idx_employee_department
-    ON employees(department_id)
-    """
-)
+# 69. Locks
 
-connection.execute(
-    """
-    CREATE INDEX idx_employee_salary
-    ON employees(salary)
-    """
-)
+Database systems can use locks to coordinate concurrent operations.
 
-print("""
-An index is an auxiliary data structure used to make certain
-queries faster.
+Conceptual lock categories include:
 
-Without an appropriate index, a database may need to inspect many
-rows.
+- Shared locks
+- Exclusive locks
 
-Indexes can improve reads but introduce costs:
+Shared locks generally relate to concurrent reads.
 
-- additional storage
-- additional write work
-- maintenance overhead
-- memory usage
+Exclusive locks generally relate to modifications.
 
-An index is not automatically beneficial for every column.
-""")
+Modern database engines may also use multiversion concurrency control and other mechanisms rather than relying exclusively on traditional locking.
 
-# ============================================================
-# SECTION 46: COMPOSITE INDEX
-# ============================================================
+---
 
-print("\n" + "=" * 80)
-print("COMPOSITE INDEX")
-print("=" * 80)
+# 70. Deadlocks
 
-connection.execute(
-    """
-    CREATE INDEX idx_department_salary
-    ON employees(department_id, salary)
-    """
-)
-
-print("""
-A composite index contains multiple columns.
-
-Index:
-
-(department_id, salary)
-
-is different from two independent indexes:
-
-(department_id)
-(salary)
-
-Column order matters.
-
-A composite index beginning with department_id can efficiently
-support queries whose filtering or ordering begins with
-department_id.
-
-This is related to the leftmost-prefix concept in many B-tree
-index implementations.
-""")
-
-# ============================================================
-# SECTION 47: SELECTIVITY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("CARDINALITY AND SELECTIVITY")
-print("=" * 80)
-
-print("""
-Cardinality can refer to the number of distinct values or, depending
-on context, the number of rows in a relation.
-
-Selectivity describes how narrowly a predicate filters rows.
-
-A predicate matching 1% of a table is highly selective.
-
-A predicate matching 90% of a table is not highly selective.
-
-Indexes are often particularly useful when they allow the database
-to quickly narrow a large candidate set.
-""")
-
-# ============================================================
-# SECTION 48: EXPLAIN QUERY PLAN
-# ============================================================
-
-print("\n" + "=" * 80)
-print("QUERY PLAN")
-print("=" * 80)
-
-plan = connection.execute(
-    """
-    EXPLAIN QUERY PLAN
-    SELECT employee_name
-    FROM employees
-    WHERE department_id = 1
-    """
-).fetchall()
-
-for row in plan:
-    print(row)
-
-print("""
-EXPLAIN and EXPLAIN QUERY PLAN expose information about how the
-database intends to execute a query.
-
-A query plan may involve:
-
-- table scans
-- index scans
-- index lookups
-- sorting
-- temporary structures
-- joins
-
-Query optimization is based on the actual execution strategy,
-not merely on the textual appearance of the SQL statement.
-""")
-
-# ============================================================
-# SECTION 49: COVERING INDEX
-# ============================================================
-
-print("\n" + "=" * 80)
-print("COVERING INDEX")
-print("=" * 80)
-
-print("""
-A covering index contains enough information for a query to be
-answered using the index without consulting the underlying table
-for every requested value.
-
-For example, an index containing:
-
-(department_id, employee_name)
-
-may be able to satisfy:
-
-SELECT employee_name
-FROM employees
-WHERE department_id = ?
-
-without requiring a separate table lookup.
-
-Whether a database chooses such a strategy depends on its optimizer
-and cost estimates.
-""")
-
-# ============================================================
-# SECTION 50: WINDOW FUNCTIONS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("WINDOW FUNCTIONS")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT
-        employee_name,
-        department_id,
-        salary,
-        RANK() OVER (
-            PARTITION BY department_id
-            ORDER BY salary DESC
-        ) AS salary_rank
-    FROM employees
-    ORDER BY department_id, salary_rank
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-Window functions calculate values across related rows without
-collapsing those rows into one result row.
-
-Common window functions:
-
-ROW_NUMBER()
-RANK()
-DENSE_RANK()
-LAG()
-LEAD()
-SUM() OVER (...)
-AVG() OVER (...)
-
-PARTITION BY divides rows into logical groups.
-
-ORDER BY inside OVER determines ordering within the window.
-""")
-
-# ============================================================
-# SECTION 51: ROW_NUMBER
-# ============================================================
-
-print("\n" + "=" * 80)
-print("ROW_NUMBER")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT
-        employee_name,
-        salary,
-        ROW_NUMBER() OVER (
-            ORDER BY salary DESC
-        ) AS row_number
-    FROM employees
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-ROW_NUMBER assigns a unique sequential number within the window.
-
-RANK can produce equal ranks when values are tied.
-
-DENSE_RANK also produces equal ranks for ties but does not leave
-gaps after a tie.
-""")
-
-# ============================================================
-# SECTION 52: SET OPERATIONS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("SET OPERATIONS")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT department_id
-    FROM employees
-    WHERE salary > 80000
-
-    UNION
-
-    SELECT department_id
-    FROM employees
-    WHERE salary < 70000
-    """
-).fetchall()
-
-print(rows)
-
-print("""
-SQL set operations include:
-
-UNION
-UNION ALL
-INTERSECT
-EXCEPT
-
-UNION removes duplicates.
-
-UNION ALL preserves duplicates and is generally cheaper when
-duplicate elimination is unnecessary.
-
-The queries involved in set operations must have compatible
-result structures.
-""")
-
-# ============================================================
-# SECTION 53: UPSERT
-# ============================================================
-
-print("\n" + "=" * 80)
-print("UPSERT")
-print("=" * 80)
-
-connection.execute(
-    """
-    INSERT INTO departments(department_id, department_name)
-    VALUES (?, ?)
-    ON CONFLICT(department_id)
-    DO UPDATE SET department_name = excluded.department_name
-    """,
-    (1, "Engineering and Technology")
-)
-
-connection.commit()
-
-print(
-    connection.execute(
-        "SELECT * FROM departments WHERE department_id = 1"
-    ).fetchone()
-)
-
-print("""
-UPSERT combines insertion and conflict handling.
-
-The exact syntax differs between database systems.
-
-The conceptual pattern is:
-
-If the record does not exist:
-    INSERT
-
-If a defined conflict occurs:
-    UPDATE or perform another action.
-""")
-
-# Restore name for remaining examples.
-connection.execute(
-    """
-    UPDATE departments
-    SET department_name = 'Engineering'
-    WHERE department_id = 1
-    """
-)
-
-connection.commit()
-
-# ============================================================
-# SECTION 54: TRIGGERS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("TRIGGERS")
-print("=" * 80)
-
-connection.executescript("""
-CREATE TABLE employee_audit (
-    audit_id INTEGER PRIMARY KEY,
-    employee_id INTEGER,
-    operation TEXT NOT NULL,
-    changed_at TEXT NOT NULL
-);
-
-CREATE TRIGGER employee_insert_audit
-AFTER INSERT ON employees
-BEGIN
-    INSERT INTO employee_audit
-    (
-        employee_id,
-        operation,
-        changed_at
-    )
-    VALUES
-    (
-        NEW.employee_id,
-        'INSERT',
-        CURRENT_TIMESTAMP
-    );
-END;
-""")
-
-connection.execute(
-    """
-    INSERT INTO employees
-    (
-        employee_id,
-        employee_name,
-        email,
-        salary,
-        department_id,
-        manager_id,
-        joining_date
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """,
-    (
-        8,
-        "Temporary Employee",
-        "temporary@example.com",
-        55000,
-        1,
-        1,
-        "2025-01-01"
-    )
-)
-
-connection.commit()
-
-print(
-    connection.execute(
-        "SELECT * FROM employee_audit"
-    ).fetchall()
-)
-
-connection.execute(
-    "DELETE FROM employees WHERE employee_id = 8"
-)
-
-connection.commit()
-
-print("""
-A trigger automatically executes when a specified database event
-occurs.
-
-Common trigger events:
-
-INSERT
-UPDATE
-DELETE
-
-Triggers can be useful for auditing and enforcing certain rules,
-but excessive trigger usage can make database behavior difficult
-to understand because logic becomes implicit.
-""")
-
-# ============================================================
-# SECTION 55: AUDIT TRAILS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("AUDITING")
-print("=" * 80)
-
-print("""
-An audit trail records important changes.
-
-Typical audit fields include:
-
-- record identifier
-- operation
-- actor
-- timestamp
-- previous value
-- new value
-- request identifier
-
-Auditing is important when the system needs to answer:
-
-Who changed this?
-What changed?
-When did it change?
-What was the previous value?
-""")
-
-# ============================================================
-# SECTION 56: SQL INJECTION
-# ============================================================
-
-print("\n" + "=" * 80)
-print("SQL INJECTION")
-print("=" * 80)
-
-print("""
-SQL injection occurs when untrusted input is incorrectly inserted
-into SQL text.
-
-Unsafe conceptual code:
-
-query = "SELECT * FROM users WHERE name = '" + user_input + "'"
-
-An attacker may manipulate the SQL syntax.
-
-The safer approach is parameterized SQL:
-
-cursor.execute(
-    "SELECT * FROM users WHERE name = ?",
-    (user_input,)
-)
-
-The database driver treats the parameter as data rather than SQL
-syntax.
-
-Parameterized queries are one of the fundamental defenses against
-SQL injection.
-""")
-
-# ============================================================
-# SECTION 57: DATABASE SECURITY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE SECURITY")
-print("=" * 80)
-
-print("""
-Database security involves multiple layers.
-
-Authentication:
-    Establishing who the user is.
-
-Authorization:
-    Determining what the user is allowed to do.
-
-Encryption:
-    Protecting data during transmission and, where appropriate,
-    at rest.
-
-Auditing:
-    Recording important database activities.
-
-Least privilege:
-    Giving identities only the permissions they actually need.
-
-Secrets management:
-    Avoiding passwords and credentials embedded directly in source
-    code.
-
-Input validation:
-    Ensuring application input is handled safely.
-
-Parameterized queries:
-    Separating SQL instructions from data values.
-""")
-
-# ============================================================
-# SECTION 58: DATA TYPES
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATA TYPES")
-print("=" * 80)
-
-print("""
-Common relational data types include:
-
-INTEGER
-BIGINT
-DECIMAL
-NUMERIC
-REAL
-FLOAT
-CHAR
-VARCHAR
-TEXT
-DATE
-TIME
-TIMESTAMP
-BOOLEAN
-BINARY
-JSON
-
-Exact types and semantics differ between database systems.
-
-For financial values, fixed-precision numeric types are generally
-preferred over floating-point representations because floating-point
-arithmetic can introduce representation errors.
-
-SQLite uses dynamic typing with type affinities, so SQLite's type
-behavior differs from strongly typed systems such as PostgreSQL.
-""")
-
-# ============================================================
-# SECTION 59: SCHEMA
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE SCHEMA")
-print("=" * 80)
-
-print("""
-A schema describes the structure and organization of database
-objects.
-
-Depending on the database system, schema-related objects can include:
-
-- tables
-- columns
-- constraints
-- indexes
-- views
-- sequences
-- functions
-- procedures
-- triggers
-
-In some systems, a schema is also a namespace that contains
-database objects.
-
-SQLite's schema model is simpler than the schema and namespace
-systems used by PostgreSQL or SQL Server.
-""")
-
-# ============================================================
-# SECTION 60: OLTP
-# ============================================================
-
-print("\n" + "=" * 80)
-print("OLTP")
-print("=" * 80)
-
-print("""
-OLTP means Online Transaction Processing.
-
-OLTP systems handle operational transactions.
-
-Examples:
-
-- placing an order
-- transferring money
-- registering a customer
-- updating inventory
-- creating an employee record
-
-Typical characteristics:
-
-- frequent writes
-- relatively small transactions
-- many concurrent users
-- strong consistency requirements
-- normalized schemas
-- low-latency operations
-""")
-
-# ============================================================
-# SECTION 61: OLAP
-# ============================================================
-
-print("\n" + "=" * 80)
-print("OLAP")
-print("=" * 80)
-
-print("""
-OLAP means Online Analytical Processing.
-
-OLAP systems are optimized for analysis.
-
-Examples:
-
-- monthly sales analysis
-- customer segmentation
-- financial reporting
-- business intelligence
-- historical trend analysis
-
-Typical characteristics:
-
-- large analytical queries
-- aggregations
-- historical data
-- fewer writes
-- large scans
-- dimensional models
-""")
-
-# ============================================================
-# SECTION 62: DATA WAREHOUSE
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATA WAREHOUSE")
-print("=" * 80)
-
-print("""
-A data warehouse is designed for analytical workloads.
-
-A common dimensional model contains:
-
-Fact tables
-    Store measurable business events.
-
-Dimension tables
-    Store descriptive context.
-
-Example:
-
-fact_sales
-
-Dimensions:
-
-dim_customer
-dim_product
-dim_date
-dim_store
-
-A sales fact might contain:
-
-customer_key
-product_key
-date_key
-store_key
-quantity
-revenue
-discount
-""")
-
-# ============================================================
-# SECTION 63: ETL AND ELT
-# ============================================================
-
-print("\n" + "=" * 80)
-print("ETL AND ELT")
-print("=" * 80)
-
-print("""
-ETL:
-
-Extract
-Transform
-Load
-
-Data is transformed before loading into the destination system.
-
-ELT:
-
-Extract
-Load
-Transform
-
-Raw or lightly processed data is loaded first and transformed
-inside the target analytical system.
-
-The distinction is architectural rather than merely terminological.
-""")
-
-# ============================================================
-# SECTION 64: RELATIONAL VS NOSQL
-# ============================================================
-
-print("\n" + "=" * 80)
-print("RELATIONAL VS NOSQL")
-print("=" * 80)
-
-print("""
-Relational databases emphasize:
-
-- structured schemas
-- tables
-- relationships
-- SQL
-- constraints
-- transactions
-- relational algebra
-
-NoSQL is a broad category containing several models.
-
-Document databases:
-    JSON-like documents.
-
-Key-value databases:
-    key -> value.
-
-Wide-column databases:
-    column-family-oriented storage.
-
-Graph databases:
-    nodes and relationships.
-
-NoSQL does not mean "no structure."
-
-It generally means the database model is not limited to the
-traditional relational model.
-
-The choice depends on access patterns, consistency requirements,
-scale, operational requirements, and data structure.
-""")
-
-# ============================================================
-# SECTION 65: JSON
-# ============================================================
-
-print("\n" + "=" * 80)
-print("SEMI-STRUCTURED DATA")
-print("=" * 80)
-
-connection.execute(
-    """
-    CREATE TABLE customer_profiles (
-        customer_id INTEGER PRIMARY KEY,
-        profile TEXT
-    )
-    """
-)
-
-connection.execute(
-    """
-    INSERT INTO customer_profiles
-    VALUES (?, ?)
-    """,
-    (
-        1,
-        '{"name":"Amit","preferences":{"language":"English","theme":"dark"}}'
-    )
-)
-
-connection.commit()
-
-print(
-    connection.execute(
-        "SELECT * FROM customer_profiles"
-    ).fetchall()
-)
-
-print("""
-JSON can be useful when data has variable structure.
-
-It should not automatically replace relational columns.
-
-A field should generally remain a normal relational column when
-the application frequently filters, joins, constrains, or indexes
-it as a first-class business attribute.
-
-JSON is useful for genuinely flexible or semi-structured data.
-""")
-
-# ============================================================
-# SECTION 66: DENORMALIZATION
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DENORMALIZATION")
-print("=" * 80)
-
-print("""
-Denormalization intentionally introduces redundancy to improve
-specific access patterns.
-
-Reasons can include:
-
-- reducing expensive joins
-- improving read performance
-- simplifying reporting
-- storing precomputed values
-
-The trade-off is increased complexity in maintaining consistency.
-
-Normalization is not a rule that must always be maximized.
-
-Database design is about selecting an appropriate balance between:
-
-- integrity
-- performance
-- maintainability
-- storage
-- simplicity
-""")
-
-# ============================================================
-# SECTION 67: DERIVED DATA
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DERIVED DATA")
-print("=" * 80)
-
-print("""
-Derived data is information that can be calculated from other data.
-
-Example:
-
-total_price = quantity * unit_price
-
-Storing both the inputs and the derived result creates a consistency
-problem unless there is a clear reason to store the derived value.
-
-Derived values can be appropriate when:
-
-- calculation is expensive
-- historical value must be preserved
-- reporting performance matters
-- business semantics require a snapshot
-""")
-
-# ============================================================
-# SECTION 68: HISTORICAL DATA
-# ============================================================
-
-print("\n" + "=" * 80)
-print("HISTORICAL DATA")
-print("=" * 80)
-
-print("""
-Current-state data answers:
-
-What is true now?
-
-Historical data answers:
-
-What was true at a particular time?
-
-A price table may contain:
-
-product_id
-price
-effective_from
-effective_to
-
-This permits temporal analysis.
-
-Historical modeling is important for:
-
-- pricing
-- employment
-- contracts
-- customer status
-- organizational structures
-- regulatory records
-""")
-
-# ============================================================
-# SECTION 69: DATABASE MIGRATIONS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE MIGRATIONS")
-print("=" * 80)
-
-print("""
-A migration is a controlled change to database structure or
-database-related data.
-
-Examples:
-
-- creating a table
-- adding a column
-- creating an index
-- changing a constraint
-- transforming existing data
-
-A migration system maintains a sequence of schema changes so that
-different environments can reach the same intended database state.
-
-Migrations should be:
-
-- ordered
-- reproducible
-- reviewable
-- tested
-- tracked
-""")
-
-# ============================================================
-# SECTION 70: ORM
-# ============================================================
-
-print("\n" + "=" * 80)
-print("ORM")
-print("=" * 80)
-
-print("""
-ORM means Object-Relational Mapping.
-
-An ORM maps application objects to relational database structures.
-
-Conceptually:
-
-Python class -> table
-object -> row
-attribute -> column
-relationship -> foreign-key relationship
-
-ORMs can reduce repetitive SQL.
-
-They can also hide important database behavior.
-
-A developer using an ORM still needs to understand:
-
-- SQL
-- joins
-- indexes
-- transactions
-- constraints
-- query plans
-- locking
-- cardinality
-""")
-
-# ============================================================
-# SECTION 71: N+1 QUERY PROBLEM
-# ============================================================
-
-print("\n" + "=" * 80)
-print("N+1 QUERY PROBLEM")
-print("=" * 80)
-
-print("""
-The N+1 query problem occurs when an application executes:
-
-1 query to retrieve N parent records
-
-followed by:
-
-N additional queries to retrieve related records.
-
-Total:
-
-N + 1 queries
-
-This can create severe performance problems.
-
-A join, eager loading strategy, batch query, or carefully designed
-data access pattern can often reduce the number of database calls.
-""")
-
-# ============================================================
-# SECTION 72: CONNECTION POOLING
-# ============================================================
-
-print("\n" + "=" * 80)
-print("CONNECTION POOLING")
-print("=" * 80)
-
-print("""
-Opening a database connection can be expensive.
-
-Connection pooling maintains reusable connections.
-
-A typical application may:
-
-1. obtain a connection
-2. execute database work
-3. commit or roll back
-4. return the connection to the pool
-
-Pooling improves efficiency for systems with many requests.
-
-The correct pool size depends on workload, database capacity,
-application concurrency, and infrastructure.
-""")
-
-# ============================================================
-# SECTION 73: DATABASE APPLICATION ARCHITECTURE
-# ============================================================
-
-print("\n" + "=" * 80)
-print("APPLICATION DATABASE ARCHITECTURE")
-print("=" * 80)
-
-print("""
-A common architecture is:
-
-Client
-   |
-Application/API
-   |
-Database access layer
-   |
-Database
-
-The application should normally define transaction boundaries
-around logical units of work.
-
-A transaction should not remain open unnecessarily while unrelated
-application work is being performed.
-""")
-
-# ============================================================
-# SECTION 74: TRANSACTION BOUNDARIES
-# ============================================================
-
-print("\n" + "=" * 80)
-print("TRANSACTION BOUNDARIES")
-print("=" * 80)
-
-print("""
-Consider an order placement operation:
-
-1. create order
-2. create order items
-3. reduce inventory
-4. record payment state
-
-If these operations represent one atomic business action, the
-transaction boundary may encompass all relevant operations.
-
-If only the first operation succeeds and the others fail, the
-system could enter an inconsistent state.
-
-Transaction boundaries should reflect business consistency
-requirements.
-""")
-
-# ============================================================
-# SECTION 75: IDEMPOTENCY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("IDEMPOTENCY")
-print("=" * 80)
-
-print("""
-An operation is idempotent if repeating it produces the same
-effective result after the first successful execution.
-
-Idempotency is important in distributed systems because network
-requests may be retried.
-
-Example:
-
-A payment request contains:
-
-idempotency_key = ABC123
-
-The server records the key and prevents the same logical operation
-from being performed twice.
-""")
-
-# ============================================================
-# SECTION 76: DATABASE RELIABILITY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("RELIABILITY")
-print("=" * 80)
-
-print("""
-Database reliability involves:
-
-- durability
-- backups
-- recovery
-- replication
-- monitoring
-- integrity checking
-- capacity management
-- failure handling
-
-A database system should be designed according to required
-availability and recovery objectives.
-""")
-
-# ============================================================
-# SECTION 77: BACKUP AND RECOVERY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("BACKUP AND RECOVERY")
-print("=" * 80)
-
-print("""
-A backup is a recoverable copy of database state.
-
-Common backup concepts:
-
-Full backup
-    Complete database backup.
-
-Incremental backup
-    Changes since a previous backup.
-
-Differential backup
-    Changes since a full backup.
-
-Point-in-time recovery
-    Restore the database to a particular moment using backups and
-    transaction logs where supported.
-
-Two important operational concepts:
-
-RPO:
-    Recovery Point Objective.
-    How much data loss is acceptable.
-
-RTO:
-    Recovery Time Objective.
-    How long recovery may take.
-""")
-
-# ============================================================
-# SECTION 78: WRITE-AHEAD LOGGING
-# ============================================================
-
-print("\n" + "=" * 80)
-print("WRITE-AHEAD LOGGING")
-print("=" * 80)
-
-print("""
-Write-Ahead Logging, or WAL, records changes in a log before the
-corresponding database pages are considered durably committed.
-
-The general principle is:
-
-log the intended change first
-then persist the affected database state
-
-Transaction logs are important for:
-
-- durability
-- crash recovery
-- replication
-- point-in-time recovery
-
-Different database systems implement logging differently.
-""")
-
-# ============================================================
-# SECTION 79: REPLICATION
-# ============================================================
-
-print("\n" + "=" * 80)
-print("REPLICATION")
-print("=" * 80)
-
-print("""
-Replication means maintaining copies of database data across
-multiple database instances.
-
-Common concepts:
-
-Primary:
-    Instance that accepts certain writes.
-
-Replica:
-    Instance maintaining a copy.
-
-Synchronous replication:
-    Stronger coordination before acknowledging writes.
-
-Asynchronous replication:
-    Replica may temporarily lag behind the primary.
-
-Replication can support:
-
-- high availability
-- disaster recovery
-- read scaling
-- geographic distribution
-
-Replication is not the same thing as backup.
-""")
-
-# ============================================================
-# SECTION 80: PARTITIONING
-# ============================================================
-
-print("\n" + "=" * 80)
-print("PARTITIONING")
-print("=" * 80)
-
-print("""
-Partitioning divides a large logical table into smaller physical
-partitions.
-
-Common strategies:
-
-Range partitioning
-    Partition by ranges such as dates.
-
-List partitioning
-    Partition by specified values.
-
-Hash partitioning
-    Partition using a hash function.
-
-Partitioning can improve manageability and performance for large
-datasets when queries align with the partitioning strategy.
-
-Partitioning is different from sharding.
-
-Partitioning usually occurs within a database system.
-
-Sharding distributes data across multiple database nodes.
-""")
-
-# ============================================================
-# SECTION 81: SHARDING
-# ============================================================
-
-print("\n" + "=" * 80)
-print("SHARDING")
-print("=" * 80)
-
-print("""
-Sharding divides data across multiple database servers.
-
-Example:
-
-Customer IDs 1-1,000,000
-    -> shard A
-
-Customer IDs 1,000,001-2,000,000
-    -> shard B
-
-A shard key determines where a record belongs.
-
-A poor shard key can cause:
-
-- hotspots
-- uneven storage
-- difficult rebalancing
-- expensive cross-shard queries
-""")
-
-# ============================================================
-# SECTION 82: DISTRIBUTED DATABASES
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DISTRIBUTED DATABASES")
-print("=" * 80)
-
-print("""
-A distributed database stores or processes data across multiple
-networked nodes.
-
-Distributed systems introduce challenges such as:
-
-- network failures
-- latency
-- partial failure
-- clock differences
-- replication lag
-- consistency trade-offs
-- distributed transactions
-- partitioning
-- leader election
-
-A local database can often assume direct access to storage.
-
-A distributed database must reason about the network as part of
-the system.
-""")
-
-# ============================================================
-# SECTION 83: CONSISTENCY MODELS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("CONSISTENCY")
-print("=" * 80)
-
-print("""
-Strong consistency means reads observe results according to a
-strong ordering guarantee.
-
-Eventual consistency means replicas may temporarily disagree but
-converge if updates stop.
-
-Distributed systems often choose consistency characteristics
-according to application requirements.
-
-Consistency is not simply a binary choice between "consistent"
-and "inconsistent."
-
-There are different consistency models and guarantees.
-""")
-
-# ============================================================
-# SECTION 84: RELATIONAL ALGEBRA
-# ============================================================
-
-print("\n" + "=" * 80)
-print("RELATIONAL ALGEBRA")
-print("=" * 80)
-
-print("""
-Relational algebra provides formal operations over relations.
-
-Important operations include:
-
-Selection
-    Filters rows.
-
-Projection
-    Selects attributes.
-
-Join
-    Combines related relations.
-
-Union
-    Combines compatible relations.
-
-Difference
-    Finds rows present in one relation but not another.
-
-Cartesian product
-    Produces combinations of rows.
-
-Relational algebra provides a mathematical foundation for relational
-query processing.
-""")
-
-# ============================================================
-# SECTION 85: JOIN CARDINALITY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("JOIN CARDINALITY")
-print("=" * 80)
-
-print("""
-Join cardinality describes how many rows can result from combining
-two relations.
-
-If a customer has five orders, joining the customer to orders
-produces five rows for that customer.
-
-Joining two one-to-many relationships without understanding their
-multiplication can create unexpectedly large result sets.
+A deadlock occurs when transactions wait for resources held by each other.
 
 For example:
 
-customers
-    1 -> many orders
+- Transaction A holds resource 1 and waits for resource 2.
+- Transaction B holds resource 2 and waits for resource 1.
 
-orders
-    1 -> many order_items
+Neither transaction can continue.
 
-Joining all three can produce one row per order item.
+Database systems generally detect deadlocks and terminate one transaction so that the system can recover.
 
-Understanding cardinality is essential for:
+Applications should be designed to handle appropriate transaction failures and retries.
 
-- correct reports
-- avoiding duplicate counts
-- query optimization
-- schema design
-""")
+---
 
-# ============================================================
-# SECTION 86: COUNTING WITH JOINS
-# ============================================================
+# 71. Indexes
 
-print("\n" + "=" * 80)
-print("COUNTING WITH JOINS")
-print("=" * 80)
+An index is a database data structure designed to make particular access patterns more efficient.
 
-rows = connection.execute(
-    """
-    SELECT
-        d.department_name,
-        COUNT(e.employee_id) AS employee_count
-    FROM departments AS d
-    LEFT JOIN employees AS e
-        ON e.department_id = d.department_id
-    GROUP BY d.department_id, d.department_name
-    ORDER BY d.department_id
-    """
-).fetchall()
+Indexes can significantly improve read performance when they match query conditions.
 
-for row in rows:
-    print(row)
+Common indexing concepts include:
 
-print("""
-COUNT(*) and COUNT(column) can behave differently with outer joins.
+- B-tree indexes
+- Composite indexes
+- Unique indexes
+- Covering indexes
+- Partial indexes
+- Specialized indexes
 
-COUNT(*) counts result rows.
+The exact index types available depend on the database system.
 
-COUNT(e.employee_id) counts only non-null employee IDs.
+---
 
-This distinction is important when preserving unmatched rows with
-LEFT JOIN.
-""")
+# 72. Index Trade-Offs
 
-# ============================================================
-# SECTION 87: TEMPORARY TABLES
-# ============================================================
+Indexes are not free.
 
-print("\n" + "=" * 80)
-print("TEMPORARY TABLES")
-print("=" * 80)
+They require:
 
-connection.execute(
-    """
-    CREATE TEMP TABLE high_salary_employees AS
-    SELECT employee_id, employee_name, salary
-    FROM employees
-    WHERE salary >= 80000
-    """
-)
+- Additional storage
+- Additional maintenance
+- Memory or cache resources
+- Extra work during inserts
+- Extra work during updates
+- Extra work during deletes
 
-rows = connection.execute(
-    """
-    SELECT *
-    FROM high_salary_employees
-    """
-).fetchall()
+Therefore, adding indexes indiscriminately can harm write performance.
 
-print(rows)
+Indexes should be created based on actual query patterns and workload requirements.
 
-print("""
-Temporary tables can store intermediate results for a session or
-transaction depending on database behavior.
+---
+
+# 73. Composite Indexes
+
+A composite index contains multiple columns.
+
+The order of columns in a composite index matters.
+
+An index containing:
+
+- Customer identifier
+- Order date
+
+is not equivalent to an index containing:
+
+- Order date
+- Customer identifier
+
+for every possible query.
+
+Index design must therefore consider how queries filter, sort, and access data.
+
+---
+
+# 74. Selectivity
+
+Selectivity describes how effectively a condition narrows down the number of candidate rows.
+
+Highly selective values can identify a small portion of a table.
+
+Low-selectivity values may match a large portion of the table.
+
+Selectivity influences whether an index is likely to be useful for a particular query.
+
+---
+
+# 75. Cardinality
+
+Cardinality can refer to the number of distinct values in a column or the nature of relationships between entities, depending on context.
+
+Examples of relationship cardinality include:
+
+- One-to-one
+- One-to-many
+- Many-to-many
+
+Understanding cardinality is essential for database modeling and query optimization.
+
+---
+
+# 76. Covering Indexes
+
+A covering index contains enough information to satisfy a query without requiring the database to access the underlying table for every matching record.
+
+This can reduce additional data access and improve performance in suitable workloads.
+
+Whether an index is covering depends on the query, selected columns, index structure, and database engine.
+
+---
+
+# 77. Query Execution Plans
+
+A database optimizer creates an execution plan describing how a query should be executed.
+
+Possible operations include:
+
+- Sequential scans
+- Index scans
+- Index-only scans
+- Nested-loop joins
+- Hash joins
+- Merge joins
+- Sort operations
+- Aggregation
+
+Understanding execution plans is essential for database performance analysis.
+
+---
+
+# 78. Query Optimization
+
+The database optimizer attempts to choose an efficient execution strategy.
+
+It can consider:
+
+- Available indexes
+- Table statistics
+- Estimated row counts
+- Selectivity
+- Join strategies
+- Sorting requirements
+- Filtering conditions
+- Cost estimates
+
+The optimizer does not simply execute SQL in the order in which the developer wrote it.
+
+The logical query describes the requested result, while the optimizer determines a physical strategy.
+
+---
+
+# 79. Logical Query Processing
+
+SQL is written in a particular syntactical order, but its logical processing can be understood through operations such as:
+
+- FROM
+- JOIN
+- WHERE
+- GROUP BY
+- HAVING
+- SELECT
+- DISTINCT
+- ORDER BY
+- LIMIT
+
+Understanding logical processing helps explain many SQL behaviors.
+
+It also explains why certain aliases or expressions cannot always be referenced in every clause.
+
+---
+
+# 80. Window Functions
+
+Window functions perform calculations across related rows without collapsing those rows into a single grouped record.
+
+They are useful for:
+
+- Ranking
+- Running totals
+- Comparisons with previous rows
+- Comparisons with next rows
+- Partition-level statistics
+- Top-N analysis
+
+Window functions are particularly powerful for analytical SQL.
+
+---
+
+# 81. Ranking
+
+Ranking functions allow records to be ordered within a defined group.
+
+Important concepts include:
+
+- ROW_NUMBER
+- RANK
+- DENSE_RANK
+
+These functions differ in how they treat tied values.
+
+Understanding those differences is important when building rankings and analytical reports.
+
+---
+
+# 82. Running Calculations
+
+Window functions can calculate values across an ordered sequence.
+
+Examples include:
+
+- Running totals
+- Cumulative averages
+- Previous transaction values
+- Next transaction values
+- Change from previous period
+
+This avoids the need to collapse the underlying rows into groups.
+
+---
+
+# 83. Temporary Tables
+
+Temporary tables store intermediate information for a limited scope.
 
 They can be useful for:
 
-- complex data processing
-- staging
-- multi-step transformations
-- procedural workflows
+- Complex transformations
+- Intermediate calculations
+- Data preparation
+- Multi-stage database operations
 
-They should not automatically replace CTEs or well-designed
-queries.
-""")
+Temporary table behavior differs between database systems.
 
-# ============================================================
-# SECTION 88: QUERY OPTIMIZATION
-# ============================================================
+---
 
-print("\n" + "=" * 80)
-print("QUERY OPTIMIZATION")
-print("=" * 80)
+# 84. Stored Procedures and Functions
 
-print("""
-Query optimization involves selecting efficient execution strategies.
+Some database systems allow executable logic to be stored inside the database.
 
-Important factors include:
+Stored procedures and functions can encapsulate reusable database operations.
 
-- indexes
-- filtering
-- join order
-- cardinality
-- selectivity
-- statistics
-- sorting
-- aggregation
-- data volume
-- network transfer
-- disk I/O
-- memory
+Potential use cases include:
 
-A query that is fast on 10,000 rows may become slow on 100 million
-rows.
+- Complex transactional operations
+- Administrative processes
+- Reusable database calculations
+- Specialized database-side logic
 
-Performance must therefore be considered relative to data volume
-and workload.
-""")
+The exact capabilities and syntax vary considerably between database products.
 
-# ============================================================
-# SECTION 89: SARGABILITY
-# ============================================================
+---
 
-print("\n" + "=" * 80)
-print("SARGABILITY")
-print("=" * 80)
+# 85. Triggers
 
-print("""
-A predicate is often described as sargable when the database can
-use an index effectively for the search condition.
+A trigger is database-side logic that automatically executes when a defined event occurs.
 
-Conceptually:
+Common events include:
 
-WHERE salary = 50000
+- Insert
+- Update
+- Delete
 
-is more directly index-friendly than expressions that transform
-the indexed column unnecessarily.
+Triggers can be useful for:
+
+- Auditing
+- Maintaining derived information
+- Enforcing specialized rules
+
+They can also make system behavior less obvious because an operation on one table may automatically cause changes elsewhere.
+
+---
+
+# 86. Database Security
+
+Database security involves protecting information and controlling access.
+
+Important security concepts include:
+
+- Authentication
+- Authorization
+- Least privilege
+- Encryption
+- Auditing
+- Secure connections
+- Credential management
+- Data protection
+- Backup protection
+
+Security should be considered part of database architecture rather than an afterthought.
+
+---
+
+# 87. Authentication and Authorization
+
+Authentication determines who is accessing the system.
+
+Authorization determines what that authenticated identity is allowed to do.
+
+A user can be successfully authenticated while still lacking permission to read or modify a particular table.
+
+This distinction is fundamental to access control.
+
+---
+
+# 88. Least Privilege
+
+Least privilege means providing users and applications only the permissions they actually require.
+
+An application that only needs to read data should not automatically receive administrative privileges.
+
+Reducing permissions limits the potential impact of compromised credentials or application vulnerabilities.
+
+---
+
+# 89. SQL Injection
+
+SQL injection occurs when untrusted input is improperly incorporated into SQL statements.
+
+The fundamental problem is the mixing of SQL structure and user-provided data.
+
+Parameterized queries separate the SQL statement from its values.
+
+This is one of the most important security practices when applications communicate with databases.
+
+---
+
+# 90. Application Validation and Database Validation
+
+Application-level validation is useful for providing user-friendly feedback.
+
+Database-level validation protects the underlying data itself.
+
+For important rules, both layers can be useful.
+
+The application can provide immediate validation.
+
+The database can enforce the invariant regardless of which application or process modifies the data.
+
+---
+
+# 91. Database Backups
+
+Backups provide protection against data loss.
+
+Failures that can require recovery include:
+
+- Hardware failures
+- Software failures
+- Accidental deletion
+- Human mistakes
+- Data corruption
+- Security incidents
+- Operational errors
+
+Common backup concepts include:
+
+- Full backups
+- Incremental backups
+- Differential backups
+- Logical backups
+- Physical backups
+
+---
+
+# 92. Recovery
+
+Backup alone is not enough.
+
+A database system also needs a recovery strategy.
+
+Recovery may involve:
+
+- Restoring backups
+- Replaying transaction logs
+- Reconstructing database state
+- Recovering to a specific point in time
+
+Recovery procedures should be tested rather than assumed to work.
+
+---
+
+# 93. Point-in-Time Recovery
+
+Point-in-time recovery allows a database to be restored to a particular point in time using backups and transaction logs.
+
+This is particularly useful when an accidental operation damages data.
+
+For example, if a destructive operation occurs at a particular time, recovery mechanisms can potentially reconstruct the database state from before that event.
+
+---
+
+# 94. Write-Ahead Logging
+
+Write-Ahead Logging, commonly called WAL, records changes in a log before the corresponding data changes are considered durably written.
+
+WAL can support:
+
+- Crash recovery
+- Durability
+- Replication
+- Recovery procedures
+
+The exact implementation differs between database systems.
+
+---
+
+# 95. Replication
+
+Replication means maintaining copies of database information across multiple nodes.
+
+A common architecture contains:
+
+- Primary node
+- Replica nodes
+
+Replication can support:
+
+- Read scaling
+- High availability
+- Disaster recovery
+- Geographic distribution
+
+Replication does not automatically solve every scalability or availability problem.
+
+---
+
+# 96. Synchronous Replication
+
+In synchronous replication, a primary may wait for confirmation that changes have been replicated before considering an operation fully committed according to the configured durability model.
+
+This can improve consistency or durability guarantees but can increase latency.
+
+---
+
+# 97. Asynchronous Replication
+
+In asynchronous replication, the primary can continue without waiting for replicas to confirm every change.
+
+This can reduce latency but creates the possibility of replication lag.
+
+If the primary fails before changes reach a replica, recovery may involve losing or reconstructing those changes depending on the architecture.
+
+---
+
+# 98. Replication Lag
+
+Replication lag is the delay between a change occurring on a source node and that change becoming available on a replica.
+
+This creates an important application-level consideration.
+
+An application that writes to a primary and immediately reads from a lagging replica may not see its own recently committed change.
+
+---
+
+# 99. Partitioning
+
+Partitioning divides a large logical dataset into smaller physical sections.
+
+Common partitioning strategies include:
+
+- Range partitioning
+- List partitioning
+- Hash partitioning
+
+Partitioning can improve manageability and performance for certain large datasets.
+
+---
+
+# 100. Partition Pruning
+
+Partition pruning allows the database to avoid accessing partitions that cannot contain relevant data.
+
+For example, a date-based partitioned table can allow a query for a specific time range to access only relevant partitions.
+
+Partition pruning can significantly reduce unnecessary data processing.
+
+---
+
+# 101. Sharding
+
+Sharding distributes data across multiple database nodes.
+
+Each node is responsible for a portion of the overall dataset.
+
+A sharded architecture may divide users or records based on a shard key.
+
+Sharding can provide horizontal scalability but introduces additional complexity around:
+
+- Routing
+- Rebalancing
+- Cross-shard queries
+- Transactions
+- Consistency
+- Failure handling
+
+---
+
+# 102. Shard Keys
+
+A shard key determines how records are distributed across shards.
+
+A good shard key should ideally provide:
+
+- Balanced distribution
+- Predictable routing
+- Appropriate query locality
+- Low risk of hotspots
+
+A poor shard key can concentrate traffic on a small number of nodes.
+
+---
+
+# 103. Hotspots
+
+A hotspot occurs when one database node, partition, or shard receives disproportionately high traffic.
+
+Hotspots reduce the benefits of distribution because one part of the system becomes overloaded while others remain underutilized.
+
+Shard-key design is therefore a critical distributed database concern.
+
+---
+
+# 104. Distributed Databases
+
+A distributed database stores or processes data across multiple machines.
+
+Distributed systems introduce problems that are less significant in a single-node database.
+
+These include:
+
+- Network failures
+- Partial failures
+- Replication
+- Coordination
+- Latency
+- Consistency
+- Data placement
+- Failover
+
+Distributed database design requires thinking about the network as part of the database environment.
+
+---
+
+# 105. CAP Theorem
+
+The CAP theorem describes important trade-offs in distributed systems under network partition.
+
+The three properties are:
+
+- Consistency
+- Availability
+- Partition tolerance
+
+When a network partition occurs, a system cannot simultaneously guarantee the strongest forms of both consistency and availability under the formal CAP model.
+
+CAP should not be reduced to the simplistic idea of choosing any two properties in every situation.
+
+The theorem is specifically concerned with behavior during network partitions.
+
+---
+
+# 106. Strong Consistency
+
+Strong consistency provides a well-defined view of committed data across distributed components.
+
+It simplifies application reasoning but can require coordination that increases latency or reduces availability under certain failure conditions.
+
+---
+
+# 107. Eventual Consistency
+
+Eventual consistency allows different replicas to temporarily contain different states.
+
+If updates stop and the system continues operating normally, replicas can eventually converge.
+
+This model can support highly distributed and available systems but requires applications to tolerate temporary inconsistencies.
+
+---
+
+# 108. OLTP
+
+OLTP stands for Online Transaction Processing.
+
+OLTP systems are designed for operational workloads.
+
+Typical characteristics include:
+
+- Frequent writes
+- Small transactions
+- Many concurrent users
+- Low-latency operations
+- Structured data
+- Strong transactional requirements
+
+Examples include:
+
+- Banking systems
+- Order processing
+- Payment systems
+- Inventory systems
+- Customer account systems
+
+---
+
+# 109. OLAP
+
+OLAP stands for Online Analytical Processing.
+
+OLAP systems focus on analytical workloads.
+
+Typical characteristics include:
+
+- Large data scans
+- Aggregations
+- Historical analysis
+- Complex queries
+- Reporting
+- Business intelligence
+
+OLAP workloads often have very different optimization requirements from OLTP workloads.
+
+---
+
+# 110. OLTP vs OLAP
+
+The fundamental difference is workload purpose.
+
+OLTP is primarily concerned with operating the business.
+
+OLAP is primarily concerned with analyzing the business.
+
+OLTP commonly emphasizes:
+
+- Fast transactions
+- Concurrent updates
+- Normalized data
+- Operational correctness
+
+OLAP commonly emphasizes:
+
+- Large analytical queries
+- Aggregations
+- Historical information
+- Analytical performance
+
+A system can contain both types of workloads, but separating them is often useful at scale.
+
+---
+
+# 111. Data Warehouses
+
+A data warehouse is designed primarily for analytical workloads.
+
+It can combine information from multiple operational sources.
+
+Sources can include:
+
+- Application databases
+- Enterprise systems
+- CRM systems
+- ERP systems
+- Files
+- APIs
+- External data sources
+
+The warehouse organizes information to support reporting and analysis.
+
+---
+
+# 112. Fact Tables
+
+Fact tables commonly represent measurable business events.
+
+Examples include:
+
+- Sales
+- Transactions
+- Orders
+- Shipments
+- Payments
+
+A fact record may contain numerical measurements and references to dimensions.
+
+---
+
+# 113. Dimension Tables
+
+Dimension tables describe entities involved in analytical events.
+
+Examples include:
+
+- Customer
+- Product
+- Store
+- Employee
+- Date
+- Region
+
+Dimensions provide descriptive context for facts.
+
+---
+
+# 114. Star Schema
+
+A star schema places a fact table at the center and connects it to dimension tables.
+
+This design is common in analytical databases because it makes business-oriented analytical queries relatively straightforward.
+
+The structure typically resembles:
+
+```text
+                Customer
+                   |
+                   |
+Product ---- Fact Table ---- Date
+                   |
+                   |
+                 Store
+```
+
+---
+
+# 115. ETL
+
+ETL stands for:
+
+- Extract
+- Transform
+- Load
+
+Data is extracted from source systems, transformed into the required form, and loaded into a destination system.
+
+ETL is commonly associated with traditional data integration and warehouse pipelines.
+
+---
+
+# 116. ELT
+
+ELT stands for:
+
+- Extract
+- Load
+- Transform
+
+Data is first loaded into the destination analytical platform and transformed there.
+
+Modern analytical platforms frequently support ELT architectures because they provide substantial computational capacity for transformation.
+
+---
+
+# 117. Relational and NoSQL Databases
+
+Relational databases organize information primarily through structured tables and relationships.
+
+NoSQL is a broad category covering several different data models.
+
+These include:
+
+- Document databases
+- Key-value databases
+- Wide-column databases
+- Graph databases
+
+The choice between relational and non-relational systems depends on:
+
+- Data structure
+- Query patterns
+- Consistency requirements
+- Scale
+- Availability requirements
+- Development model
+- Operational requirements
+
+NoSQL does not mean "no structure."
+
+Different NoSQL systems simply apply different structural models.
+
+---
+
+# 118. Document Databases
+
+Document databases store records as documents, commonly using JSON-like structures.
+
+They are useful when application data is naturally hierarchical or when records have flexible structures.
+
+The trade-off is that relationships and constraints may need to be handled differently from traditional relational databases.
+
+---
+
+# 119. Key-Value Databases
+
+Key-value databases associate a key with a value.
+
+They are particularly effective when the application knows the key required to retrieve information.
+
+They are commonly associated with:
+
+- Caching
+- Session storage
+- Fast lookups
+- Distributed state
+
+---
+
+# 120. Graph Databases
+
+Graph databases represent information using concepts such as:
+
+- Nodes
+- Relationships
+- Properties
+
+They are useful when relationships are central to the workload.
+
+Examples include:
+
+- Social networks
+- Recommendation systems
+- Fraud analysis
+- Knowledge graphs
+- Network analysis
+
+---
+
+# 121. Semi-Structured Data
+
+Semi-structured data contains organizational information without necessarily following a rigid relational schema.
+
+JSON is a common example.
+
+Modern relational databases often support JSON because applications frequently need both structured relational data and flexible metadata.
+
+---
+
+# 122. Database Design
+
+Database design begins with understanding the business domain.
+
+The process generally involves:
+
+1. Identifying entities
+2. Identifying attributes
+3. Identifying relationships
+4. Identifying business rules
+5. Selecting keys
+6. Defining constraints
+7. Normalizing the design
+8. Considering query patterns
+9. Designing indexes
+10. Considering performance and scalability
+
+Database design is therefore closely connected to application requirements.
+
+---
+
+# 123. Entities
+
+An entity represents a meaningful concept in the domain.
+
+Examples include:
+
+- Customer
+- Product
+- Employee
+- Department
+- Order
+- Payment
+
+An entity normally becomes a table in a relational implementation.
+
+---
+
+# 124. Attributes
+
+Attributes describe entities.
+
+For a customer, attributes may include:
+
+- Customer identifier
+- Name
+- Email
+- Phone number
+- City
+- Creation date
+
+Attributes should represent meaningful facts about the entity.
+
+---
+
+# 125. Relationships
+
+Relationships describe how entities interact.
+
+Common relationship types include:
+
+- One-to-one
+- One-to-many
+- Many-to-many
+
+Relationships are represented using foreign keys, junction tables, or other relational structures.
+
+---
+
+# 126. Many-to-Many Relationships
+
+Many-to-many relationships require an intermediate structure.
 
 For example:
 
-WHERE function(salary) = ...
+- One student can take many courses.
+- One course can have many students.
 
-may prevent efficient index use depending on the database.
+A separate enrollment structure represents the relationship.
 
-The exact optimization behavior depends on the database engine and
-available indexes.
-""")
+This avoids storing uncontrolled collections inside individual fields.
 
-# ============================================================
-# SECTION 90: QUERY DESIGN
-# ============================================================
+---
 
-print("\n" + "=" * 80)
-print("QUERY DESIGN PRINCIPLES")
-print("=" * 80)
+# 127. Business Rules
 
-print("""
-A well-designed query should:
+Business rules describe conditions that must remain true.
 
-- express the required business logic clearly
-- return only necessary columns
-- filter appropriately
-- use correct join conditions
-- avoid accidental Cartesian products
-- use indexes where justified
-- respect transaction boundaries
-- handle NULL correctly
-- account for data volume
-- use parameters for external values
-""")
+Examples include:
 
-# ============================================================
-# SECTION 91: CARTESIAN PRODUCT
-# ============================================================
+- A customer can have multiple orders.
+- An order must belong to a customer.
+- An order item must reference a valid product.
+- A quantity must be positive.
+- A product price cannot be negative.
+- An email address must be unique.
 
-print("\n" + "=" * 80)
-print("CARTESIAN PRODUCT")
-print("=" * 80)
+Business rules influence schema design and constraints.
 
-print("""
-A Cartesian product combines every row of one relation with every
-row of another.
+---
 
-If table A has 100 rows and table B has 1,000 rows:
+# 128. Derived Data
 
-100 x 1,000 = 100,000 combinations
+Derived data is calculated from other information.
 
-A Cartesian product may be intentional in some analytical queries,
-but accidental Cartesian products are a common source of performance
-and correctness problems.
-""")
+For example, an order total can be calculated from quantities and prices.
 
-# ============================================================
-# SECTION 92: DATABASE TESTING
-# ============================================================
+Storing derived values can improve performance but creates an additional consistency responsibility.
 
-print("\n" + "=" * 80)
-print("DATABASE TESTING")
-print("=" * 80)
+If the underlying information changes, derived information must remain synchronized.
 
-print("""
+---
+
+# 129. Historical Data
+
+Historical information often needs to remain accurate even when current values change.
+
+For example, the current price of a product may change, but an old order should still preserve the price that applied when the order occurred.
+
+This is why transactional records often store historical snapshots of important values.
+
+---
+
+# 130. Temporal Data
+
+Temporal data represents information that changes over time.
+
+Examples include:
+
+- Employee salary history
+- Product price history
+- Customer addresses
+- Account status
+- Subscription states
+
+A temporal design can preserve when a value became valid and when it stopped being valid.
+
+---
+
+# 131. Soft Deletes
+
+A soft delete marks a record as deleted instead of physically removing it.
+
+Common representations include deletion flags or deletion timestamps.
+
+Soft deletion can help with:
+
+- Recovery
+- Auditing
+- Historical records
+
+It also creates additional query complexity because normal application queries may need to exclude logically deleted records.
+
+---
+
+# 132. Database Integrity
+
+Database integrity refers to maintaining correct and consistent information.
+
+Important integrity categories include:
+
+- Entity integrity
+- Referential integrity
+- Domain integrity
+- Business-rule integrity
+
+Primary keys support entity identity.
+
+Foreign keys support relationships.
+
+Data types and CHECK constraints support domain rules.
+
+Business rules may require combinations of constraints, transactions, application logic, or database-side logic.
+
+---
+
+# 133. Database Performance
+
+Database performance depends on many factors.
+
+Important factors include:
+
+- Query structure
+- Indexes
+- Data volume
+- Join cardinality
+- Query plans
+- Statistics
+- CPU
+- Memory
+- Storage
+- Network latency
+- Lock contention
+- Connection management
+- Caching
+
+Performance problems should therefore be investigated systematically rather than solved by automatically adding indexes.
+
+---
+
+# 134. Query Performance
+
+A query can become slow because of:
+
+- Large table scans
+- Missing indexes
+- Poor index selection
+- Inefficient joins
+- Excessive sorting
+- Large result sets
+- Incorrect cardinality estimates
+- Lock contention
+- Network overhead
+- Inefficient application access patterns
+
+The appropriate solution depends on the actual cause.
+
+---
+
+# 135. N+1 Query Problem
+
+The N+1 problem occurs when an application first retrieves a collection and then performs an additional database query for each individual item.
+
+For example:
+
+- One query retrieves customers.
+- A separate query retrieves orders for each customer.
+
+For N customers, this can produce N+1 queries.
+
+The result can be excessive network communication and database overhead.
+
+Possible solutions include appropriate joins, batching, eager loading, or carefully designed data-access patterns.
+
+---
+
+# 136. Connection Pooling
+
+Applications typically communicate with databases through connections.
+
+Creating a new connection for every request can be expensive.
+
+Connection pooling maintains reusable database connections.
+
+A pool can improve efficiency by:
+
+- Reusing established connections
+- Limiting simultaneous connections
+- Reducing connection setup overhead
+
+The pool must be configured appropriately because too many connections can overload the database.
+
+---
+
+# 137. Database Drivers
+
+A database driver provides the interface through which an application communicates with a database.
+
+Python provides the sqlite3 module for SQLite.
+
+Other database systems generally require their own drivers or compatible database libraries.
+
+The driver translates application-level requests into communication understood by the database system.
+
+---
+
+# 138. ORM
+
+ORM stands for Object-Relational Mapping.
+
+An ORM maps application objects and structures to relational database concepts.
+
+ORMs can simplify development by reducing repetitive database-access code.
+
+They can also introduce abstraction that hides important database behavior.
+
+Understanding SQL, indexes, transactions, joins, and execution plans remains important even when using an ORM.
+
+---
+
+# 139. Database Migrations
+
+A migration represents a controlled change to database structure.
+
+Examples include:
+
+- Creating a table
+- Adding a column
+- Removing a column
+- Creating an index
+- Adding a constraint
+- Renaming a structure
+
+Migrations allow schema changes to be versioned and reproduced across environments.
+
+---
+
+# 140. Schema Evolution
+
+Database schemas change as applications evolve.
+
+Schema evolution becomes particularly challenging when multiple versions of an application are running simultaneously.
+
+Techniques such as backward-compatible changes and expand-and-contract migrations can help applications transition between schema versions safely.
+
+---
+
+# 141. Idempotency
+
+Idempotency means that repeating an operation does not produce unintended repeated effects.
+
+Idempotency is particularly important for:
+
+- APIs
+- Payment processing
+- Distributed systems
+- Retry mechanisms
+- Message processing
+
+For example, setting a record to a specific final state can be idempotent, while creating a new record repeatedly may not be.
+
+---
+
+# 142. UPSERT
+
+An upsert represents an operation where existing information is updated while missing information is inserted.
+
+The exact syntax differs between database systems.
+
+Upsert behavior is useful for synchronization, data ingestion, configuration management, and other workflows where a record may or may not already exist.
+
+---
+
+# 143. Auditing
+
+Auditing records changes made to data.
+
+An audit system can capture information such as:
+
+- Who made a change
+- What operation occurred
+- Which record was affected
+- When the change occurred
+- Previous state
+- New state
+
+Auditing can be implemented at the application level, database level, or through specialized data-change mechanisms.
+
+---
+
+# 144. Data Lineage
+
+Data lineage describes where information originates, how it changes, and where it is consumed.
+
+Lineage becomes important in:
+
+- Data warehouses
+- Analytics
+- Regulatory environments
+- Data governance
+- Machine learning pipelines
+
+Understanding lineage helps determine whether a value can be trusted and how it was produced.
+
+---
+
+# 145. Database Observability
+
+Database observability involves understanding database behavior through measurable signals.
+
+Important metrics include:
+
+- Query latency
+- Transactions per second
+- Connection count
+- Cache hit rate
+- Lock waits
+- Deadlocks
+- Replication lag
+- CPU utilization
+- Memory utilization
+- Disk usage
+- Storage growth
+
+Logs and execution statistics can help identify abnormal behavior and performance problems.
+
+---
+
+# 146. Database Availability
+
+Availability describes whether the database can continue serving requests when needed.
+
+Availability can be improved through:
+
+- Replication
+- Redundancy
+- Failover
+- Load balancing
+- Disaster recovery
+- Monitoring
+
+Availability is different from durability.
+
+A database can preserve committed data while temporarily being unavailable.
+
+---
+
+# 147. Database Durability
+
+Durability concerns the survival of committed information after failures.
+
+A durable system uses mechanisms such as:
+
+- Persistent storage
+- Transaction logging
+- WAL
+- Replication
+- Recovery procedures
+
+Durability and availability address different aspects of reliability.
+
+---
+
+# 148. Vertical Scaling
+
+Vertical scaling increases the resources available to a database server.
+
+Resources can include:
+
+- CPU
+- Memory
+- Storage performance
+- Storage capacity
+
+Vertical scaling is often simpler than distributed scaling, but it eventually encounters hardware limits and cost constraints.
+
+---
+
+# 149. Horizontal Scaling
+
+Horizontal scaling adds additional machines or database nodes.
+
+It can provide greater scalability but introduces distributed-system complexity.
+
+Challenges can include:
+
+- Data distribution
+- Coordination
+- Consistency
+- Routing
+- Replication
+- Failure handling
+
+---
+
+# 150. Read Scaling
+
+Read-heavy workloads can sometimes be distributed across replicas.
+
+A common architecture has:
+
+- One primary for writes
+- Multiple replicas for reads
+
+This can increase read capacity.
+
+The application must account for replication lag when using replicas.
+
+---
+
+# 151. Write Scaling
+
+Write scaling is more difficult because writes often require coordination.
+
+Possible approaches include:
+
+- Partitioning
+- Sharding
+- Batching
+- Workload separation
+- Distributed processing
+
+The appropriate approach depends on the application's workload and consistency requirements.
+
+---
+
+# 152. Caching
+
+Caching stores frequently accessed information in a faster storage layer.
+
+A common pattern is:
+
+1. Application checks cache.
+2. If data exists, return it.
+3. If data does not exist, retrieve it from the database.
+4. Store the result in the cache.
+5. Return the result.
+
+Caching reduces database load but introduces the problem of stale data.
+
+---
+
+# 153. Cache Invalidation
+
+When database information changes, cached information may become outdated.
+
+Common caching strategies include:
+
+- Cache-aside
+- Write-through
+- Write-back
+- Time-based expiration
+- Explicit invalidation
+
+Cache consistency must be considered carefully when cached information affects important business decisions.
+
+---
+
+# 154. Database and External Systems
+
+A database transaction normally cannot automatically make an external API call atomic with the database transaction.
+
+For example, updating an order and calling an external payment service are separate systems.
+
+Distributed application architectures therefore use patterns such as:
+
+- Idempotency
+- Retry mechanisms
+- Compensation
+- Outbox pattern
+- Saga pattern
+
+These approaches help coordinate work across system boundaries.
+
+---
+
+# 155. Outbox Pattern
+
+The outbox pattern stores an event in the same database transaction as the business change.
+
+The event is then processed by another component and published to external systems.
+
+This helps prevent situations where a database change succeeds but the corresponding event fails to reach another service.
+
+---
+
+# 156. Database Lifecycle
+
+Data has a lifecycle:
+
+- Creation
+- Storage
+- Access
+- Modification
+- Archival
+- Deletion
+
+Database architecture should consider this complete lifecycle.
+
+Storage decisions made during initial development can affect operational costs, historical analysis, security, and deletion requirements later.
+
+---
+
+# 157. Data Retention
+
+Data retention determines how long information should be preserved.
+
+Retention requirements can be influenced by:
+
+- Business requirements
+- Legal requirements
+- Compliance
+- Historical analysis
+- Storage costs
+- Privacy considerations
+
+Retention policies should be explicit because keeping everything forever can create unnecessary operational and governance problems.
+
+---
+
+# 158. Database Portability
+
+SQL has standardized concepts, but database systems implement different dialects and features.
+
+Differences can occur in:
+
+- Data types
+- Generated identifiers
+- Date functions
+- JSON functionality
+- Upsert operations
+- Pagination
+- Index types
+- Stored procedures
+- Transaction behavior
+
+Therefore, SQL knowledge should include both standard relational concepts and awareness of database-specific behavior.
+
+---
+
+# 159. SQLite
+
+SQLite is an embedded relational database.
+
+It is useful for:
+
+- Learning
+- Prototyping
+- Local applications
+- Testing
+- Small workloads
+
+SQLite differs architecturally from server-based database systems such as PostgreSQL and MySQL.
+
+One important SQLite concept is that foreign-key enforcement needs to be explicitly enabled in environments where it is not already enabled.
+
+This demonstrates that database features can depend not only on schema definitions but also on configuration and runtime behavior.
+
+---
+
+# 160. Database Testing
+
 Database testing can verify:
 
-Schema correctness
-------------------
-Are tables and columns defined correctly?
+- Schema correctness
+- Constraints
+- Relationships
+- Query behavior
+- Transaction behavior
+- Migrations
+- Data integrity
+- Concurrency behavior
+- Performance
 
-Constraint correctness
-----------------------
-Are invalid records rejected?
+Testing should verify both successful operations and invalid operations.
 
-Query correctness
------------------
-Does the query return the expected result?
+A database is reliable only when its failure behavior is understood as well as its successful behavior.
 
-Transaction correctness
-------------------------
-Do operations commit and roll back correctly?
+---
 
-Concurrency behavior
----------------------
-Does the system behave correctly under simultaneous operations?
-
-Migration correctness
----------------------
-Can the schema move between versions safely?
-
-Performance behavior
---------------------
-Does the query remain acceptable at realistic data volumes?
-""")
-
-# ============================================================
-# SECTION 93: DATA INTEGRITY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATA INTEGRITY")
-print("=" * 80)
+# 161. Constraint Testing
 
-print("""
-Entity integrity:
-    Every row should have a valid unique identifier.
+Constraint tests verify that invalid states cannot be created.
 
-Referential integrity:
-    Foreign-key relationships should point to valid records.
+Examples include:
 
-Domain integrity:
-    Attribute values should satisfy their allowed rules.
+- Duplicate unique values
+- Missing required values
+- Invalid foreign-key references
+- Negative prices
+- Invalid quantities
 
-User-defined integrity:
-    Business-specific rules should be enforced where appropriate.
+These tests verify that the database actually enforces the intended data model.
 
-Database constraints are one of the strongest mechanisms for
-protecting integrity because they operate at the data layer.
-""")
+---
 
-# ============================================================
-# SECTION 94: APPLICATION VALIDATION VS DATABASE VALIDATION
-# ============================================================
+# 162. Transaction Testing
 
-print("\n" + "=" * 80)
-print("APPLICATION VS DATABASE VALIDATION")
-print("=" * 80)
+Transaction tests verify that operations either produce the intended committed state or are rolled back correctly when failures occur.
 
-print("""
-Application validation provides:
+This is especially important for multi-step operations.
 
-- user-friendly error messages
-- early feedback
-- interface-specific rules
+A test should verify not only that an error is generated, but also that the database has not been left in an unintended partial state.
 
-Database validation provides:
+---
 
-- centralized integrity
-- protection against multiple applications
-- protection against accidental direct writes
-- consistent enforcement
+# 163. Migration Testing
 
-A robust system commonly uses both.
+Migration testing ensures that database schema changes can be applied safely.
 
-Application validation improves usability.
+Important concerns include:
 
-Database constraints protect correctness.
-""")
+- Existing data
+- Existing indexes
+- Existing constraints
+- Application compatibility
+- Rollback requirements
+- Migration ordering
 
-# ============================================================
-# SECTION 95: E-COMMERCE DATA MODEL
-# ============================================================
+Database migrations should be treated as production changes rather than simple scripts.
 
-print("\n" + "=" * 80)
-print("E-COMMERCE DATABASE MODEL")
-print("=" * 80)
+---
 
-print("""
-A simplified e-commerce system might contain:
+# 164. Database Anti-Patterns
 
-customers
----------
-customer_id
-name
-email
+Several database practices commonly create problems.
 
-products
---------
-product_id
-name
-price
+Examples include:
 
-orders
-------
-order_id
-customer_id
-order_date
-status
+- Excessive use of SELECT *
+- Missing indexes for important access patterns
+- Too many unnecessary indexes
+- N+1 queries
+- Large unbounded result sets
+- Poor pagination
+- Storing unrelated data in one table
+- Excessive denormalization
+- Ignoring constraints
+- Long-running transactions
+- Excessive database connections
+- Treating database errors as unexpected events
+- Relying entirely on application validation
 
-order_items
------------
-order_id
-product_id
-quantity
-unit_price
+Recognizing anti-patterns is part of developing good database judgment.
 
-payments
---------
-payment_id
-order_id
-amount
-status
+---
 
-inventory
----------
-product_id
-quantity
+# 165. Long-Running Transactions
 
-Relationships:
+Transactions that remain open for too long can cause:
 
-customer 1 ---- N orders
+- Lock contention
+- Increased resource usage
+- Greater deadlock risk
+- Reduced concurrency
+- Larger recovery requirements
 
-order 1 ---- N order_items
+Transaction boundaries should therefore correspond to meaningful business operations without unnecessarily keeping database resources occupied.
 
-product 1 ---- N order_items
+---
 
-order 1 ---- N payments
+# 166. Database Connection Limits
 
-product 1 ---- 1 inventory record
-""")
+Every database connection consumes resources.
 
-# ============================================================
-# SECTION 96: SNAPSHOT VALUES
-# ============================================================
+An application that opens too many connections can overload the database even when individual queries are efficient.
 
-print("\n" + "=" * 80)
-print("SNAPSHOT VALUES")
-print("=" * 80)
+Connection pooling and appropriate concurrency limits are therefore important parts of application architecture.
 
-print("""
-Suppose a product currently costs 1,500.
+---
 
-An order was placed when the product cost 1,200.
+# 167. Batch Processing
 
-The order should normally preserve the historical transaction
-price rather than calculating it from the current product price.
+Batching combines multiple database operations into fewer database interactions.
 
-Therefore:
+It can reduce:
 
-products.price
-    represents current product pricing.
+- Network round trips
+- Statement overhead
+- Transaction overhead
 
-order_items.unit_price
-    represents the price applicable to the historical transaction.
+Batching is particularly useful for large data imports and bulk updates.
 
-This is an example where storing a value that appears redundant
-is necessary because it represents a different business fact.
-""")
+---
 
-# ============================================================
-# SECTION 97: GENERATED IDENTIFIERS
-# ============================================================
+# 168. Bulk Loading
 
-print("\n" + "=" * 80)
-print("SURROGATE IDENTIFIERS")
-print("=" * 80)
+Bulk loading mechanisms are designed to efficiently insert large amounts of data.
 
-print("""
-A surrogate key is an artificial identifier.
+They are commonly used for:
 
-Example:
+- Data migration
+- Initial database population
+- Data warehouse ingestion
+- Large-scale imports
 
-employee_id = 101
+Bulk operations are generally preferable to processing millions of records through inefficient individual requests.
 
-Advantages:
+---
 
-- compact
-- stable
-- easy to reference
-- independent of business meaning
+# 169. Database as a System of Record
 
-A natural key may change because business rules change.
+A system of record is the authoritative source for a particular category of information.
 
-For example, an email address may look unique but can change.
+For example, an order database may be the authoritative source for order state.
 
-Using email as the primary identifier can therefore create
-unnecessary coupling.
-""")
+Other systems may cache or replicate the information, but the system of record establishes the authoritative state.
 
-# ============================================================
-# SECTION 98: DATABASE DESIGN PROCESS
-# ============================================================
+This concept is important in distributed application architectures.
 
-print("\n" + "=" * 80)
-print("DATABASE DESIGN")
-print("=" * 80)
+---
 
-print("""
-A relational database design begins with understanding the business
-domain.
+# 170. Database Architecture
 
-Typical reasoning process:
+A modern application may follow an architecture such as:
 
-1. Identify entities.
-2. Identify attributes.
-3. Identify relationships.
-4. Identify candidate keys.
-5. Select primary keys.
-6. Define foreign keys.
-7. Define constraints.
-8. Analyze functional dependencies.
-9. Normalize where appropriate.
-10. Consider access patterns.
-11. Create indexes based on actual requirements.
-12. Define transaction boundaries.
-13. Consider security.
-14. Consider backup and recovery requirements.
-15. Test realistic workloads.
-""")
+Application
 
-# ============================================================
-# SECTION 99: SCHEMA EVOLUTION
-# ============================================================
+↓
 
-print("\n" + "=" * 80)
-print("SCHEMA EVOLUTION")
-print("=" * 80)
+API
 
-print("""
-A database schema changes as software changes.
+↓
 
-Examples:
+Business Logic
 
-Version 1:
-    users(name)
+↓
 
-Version 2:
-    users(first_name, last_name)
+Data Access Layer
 
-Version 3:
-    users(first_name, last_name, created_at)
+↓
 
-Schema evolution must consider:
+Database Driver
 
-- existing data
-- application compatibility
-- migration duration
-- indexes
-- constraints
-- rollback strategy
-- deployment ordering
-""")
+↓
 
-# ============================================================
-# SECTION 100: BACKWARD COMPATIBILITY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("BACKWARD COMPATIBILITY")
-print("=" * 80)
-
-print("""
-During a rolling deployment, old and new application versions may
-temporarily run simultaneously.
-
-A database migration should therefore often be designed so that
-both versions can operate safely during the transition.
-
-A common strategy is:
-
-1. Add new structure.
-2. Deploy application support.
-3. Backfill data.
-4. Switch reads and writes.
-5. Remove obsolete structure later.
-
-This avoids requiring every application instance to change at
-exactly the same instant.
-""")
-
-# ============================================================
-# SECTION 101: STORED PROCEDURES
-# ============================================================
-
-print("\n" + "=" * 80)
-print("STORED PROCEDURES AND FUNCTIONS")
-print("=" * 80)
-
-print("""
-Many database systems support stored procedures and functions.
-
-A stored procedure can encapsulate database-side operations.
-
-A function can calculate or return a value.
-
-Advantages can include:
-
-- centralized database logic
-- reduced network round trips
-- controlled interfaces
-
-Disadvantages can include:
-
-- vendor-specific syntax
-- deployment complexity
-- logic split between application and database
-- testing complexity
-
-SQLite does not provide stored procedures in the same way as
-systems such as PostgreSQL, SQL Server, or Oracle.
-""")
-
-# ============================================================
-# SECTION 102: DATABASE OBSERVABILITY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE OBSERVABILITY")
-print("=" * 80)
-
-print("""
-Database observability involves understanding database behavior
-through measurable signals.
-
-Useful metrics include:
-
-- query latency
-- throughput
-- transaction rate
-- connection count
-- lock waits
-- cache efficiency
-- disk usage
-- replication lag
-- error rate
-- slow queries
-
-Observability allows database problems to be investigated using
-evidence rather than assumptions.
-""")
-
-# ============================================================
-# SECTION 103: SLOW QUERIES
-# ============================================================
-
-print("\n" + "=" * 80)
-print("SLOW QUERY INVESTIGATION")
-print("=" * 80)
-
-print("""
-A systematic investigation may involve:
-
-1. Identify the slow query.
-2. Measure execution time.
-3. Inspect the query plan.
-4. Examine indexes.
-5. Examine row counts.
-6. Examine cardinality.
-7. Check filtering selectivity.
-8. Check join behavior.
-9. Check sorting and aggregation.
-10. Check database resource usage.
-11. Compare estimated and actual behavior where supported.
-12. Test changes against realistic data.
-
-Adding an index without understanding the workload is not always
-the correct solution.
-""")
-
-# ============================================================
-# SECTION 104: DATABASE ANTI-PATTERNS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("COMMON DATABASE ANTI-PATTERNS")
-print("=" * 80)
-
-print("""
-Common problems include:
-
-1. Storing comma-separated lists in relational columns.
-
-2. Using SELECT * everywhere.
-
-3. Missing foreign keys.
-
-4. Missing constraints.
-
-5. Using application code to enforce every integrity rule.
-
-6. Creating indexes on every column.
-
-7. Using indexes without analyzing query patterns.
-
-8. Ignoring NULL semantics.
-
-9. Using DISTINCT to hide duplicate rows caused by incorrect joins.
-
-10. Performing N+1 queries.
-
-11. Keeping transactions open for too long.
-
-12. Storing passwords as plain text.
-
-13. Building SQL through string concatenation.
-
-14. Using a natural key without considering stability.
-
-15. Storing derived data without defining consistency rules.
-
-16. Ignoring migration compatibility.
-
-17. Assuming replication is a substitute for backup.
-
-18. Assuming database scaling is solved by adding indexes alone.
-""")
-
-# ============================================================
-# SECTION 105: DATABASE DIALECTS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("SQL DIALECTS")
-print("=" * 80)
-
-print("""
-SQL is standardized, but database systems implement different
-dialects and features.
-
-Differences may exist in:
-
-- data types
-- pagination syntax
-- date functions
-- JSON functions
-- UPSERT syntax
-- procedural languages
-- stored procedures
-- indexing
-- generated columns
-- identity columns
-- recursive queries
-- locking behavior
-
-Common SQL systems include:
-
-PostgreSQL
-MySQL
-SQL Server
-Oracle
-SQLite
-
-SQL knowledge transfers across systems, but production SQL must
-respect the target database's dialect.
-""")
-
-# ============================================================
-# SECTION 106: DATABASE ENGINE
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE ENGINE")
-print("=" * 80)
-
-print("""
-The database engine is responsible for implementing database
-operations.
-
-Major internal responsibilities can include:
-
-- parsing SQL
-- optimizing queries
-- executing query plans
-- managing storage
-- maintaining indexes
-- enforcing constraints
-- managing transactions
-- concurrency control
-- logging
-- recovery
-""")
-
-# ============================================================
-# SECTION 107: QUERY PROCESSING
-# ============================================================
-
-print("\n" + "=" * 80)
-print("QUERY PROCESSING")
-print("=" * 80)
-
-print("""
-A simplified query-processing pipeline is:
-
-SQL text
-   |
-Parser
-   |
-Parsed representation
-   |
-Optimizer
-   |
-Execution plan
-   |
-Execution engine
-   |
-Storage/index access
-   |
-Result
-
-The optimizer attempts to choose an efficient plan based on
-available information and cost estimates.
-""")
-
-# ============================================================
-# SECTION 108: COST-BASED OPTIMIZATION
-# ============================================================
-
-print("\n" + "=" * 80)
-print("COST-BASED OPTIMIZATION")
-print("=" * 80)
-
-print("""
-Many database optimizers use cost estimates.
-
-Possible cost components include:
-
-- disk I/O
-- CPU
-- memory
-- number of rows
-- sorting
-- join operations
-- index access
-- network transfer
-
-The optimizer compares possible execution strategies and selects
-one it estimates to be efficient.
-
-Statistics help the optimizer estimate data distribution.
-""")
-
-# ============================================================
-# SECTION 109: DATABASE STATISTICS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE STATISTICS")
-print("=" * 80)
-
-print("""
-Database statistics describe data characteristics such as:
-
-- row counts
-- value distribution
-- distinct values
-- selectivity
-- index distribution
-
-Optimizers use statistics when deciding between execution plans.
-
-Outdated statistics can lead to poor estimates and poor plans.
-""")
-
-# ============================================================
-# SECTION 110: NORMALIZED VS DENORMALIZED DESIGN
-# ============================================================
-
-print("\n" + "=" * 80)
-print("NORMALIZED VS DENORMALIZED")
-print("=" * 80)
-
-print("""
-Normalized design emphasizes:
-
-- reduced redundancy
-- integrity
-- maintainability
-- fewer update anomalies
-
-Denormalized design emphasizes:
-
-- read efficiency
-- fewer joins
-- reporting convenience
-- precomputed values
-
-Neither approach is universally superior.
-
-The correct design depends on:
-
-- workload
-- data size
-- consistency requirements
-- query patterns
-- write frequency
-- reporting requirements
-""")
-
-# ============================================================
-# SECTION 111: DATA LIFECYCLE
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATA LIFECYCLE")
-print("=" * 80)
-
-print("""
-Data generally passes through stages such as:
-
-creation
-    |
-storage
-    |
-processing
-    |
-usage
-    |
-archival
-    |
-deletion
-
-Database design must consider how data behaves throughout its
-lifecycle.
-
-Retention requirements may require historical storage.
-
-Privacy requirements may require controlled deletion.
-
-Operational requirements may require archival.
-""")
-
-# ============================================================
-# SECTION 112: DATABASE ADMINISTRATOR
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE ADMINISTRATION")
-print("=" * 80)
-
-print("""
-Database administration may include:
-
-- installation
-- configuration
-- user management
-- permissions
-- backup
-- recovery
-- monitoring
-- performance tuning
-- capacity planning
-- replication
-- upgrades
-- patching
-- security
-- disaster recovery
-
-The exact responsibilities depend on the organization's
-architecture and operating model.
-""")
-
-# ============================================================
-# SECTION 113: DATABASE SECURITY PRINCIPLES
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE SECURITY PRINCIPLES")
-print("=" * 80)
-
-print("""
-Important security principles include:
-
-Least privilege
----------------
-Users and services receive only required permissions.
-
-Defense in depth
-----------------
-Multiple security controls are used.
-
-Separation of duties
---------------------
-Critical responsibilities are distributed.
-
-Secure credential handling
---------------------------
-Credentials should be protected and rotated.
-
-Encryption
-----------
-Sensitive data should be protected appropriately.
-
-Auditing
---------
-Important activities should be traceable.
-
-Parameterized SQL
------------------
-External data should not be interpreted as SQL instructions.
-""")
-
-# ============================================================
-# SECTION 114: DATA MODELING
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATA MODELING")
-print("=" * 80)
-
-print("""
-Data modeling converts business requirements into structured
-representations.
-
-Conceptual model:
-    High-level business entities and relationships.
-
-Logical model:
-    Detailed attributes, relationships, keys, and constraints.
-
-Physical model:
-    Database-specific implementation involving data types,
-    indexes, partitions, storage structures, and performance choices.
-""")
-
-# ============================================================
-# SECTION 115: ENTITY-RELATIONSHIP MODEL
-# ============================================================
-
-print("\n" + "=" * 80)
-print("ENTITY-RELATIONSHIP MODEL")
-print("=" * 80)
-
-print("""
-An ER model describes:
-
-Entities:
-    Objects or concepts of interest.
-
-Attributes:
-    Properties of entities.
-
-Relationships:
-    Associations between entities.
-
-Example:
-
-Customer
-    |
-    | places
-    |
-Order
-    |
-    | contains
-    |
-OrderItem
-    |
-    | references
-    |
-Product
-""")
-
-# ============================================================
-# SECTION 116: OPTIONALITY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("RELATIONSHIP OPTIONALITY")
-print("=" * 80)
-
-print("""
-Relationships can be optional or mandatory.
-
-Example:
-
-An employee may or may not have a manager.
-
-That can be represented by:
-
-manager_id NULL
-
-An employee must belong to a department.
-
-That can be represented by:
-
-department_id NOT NULL
-
-Optionality is part of the business meaning encoded in the schema.
-""")
-
-# ============================================================
-# SECTION 117: REFERENTIAL ACTIONS
-# ============================================================
-
-print("\n" + "=" * 80)
-print("REFERENTIAL ACTIONS")
-print("=" * 80)
-
-print("""
-Foreign keys can define behavior when referenced records change.
-
-Common actions include:
-
-CASCADE
-SET NULL
-SET DEFAULT
-RESTRICT
-NO ACTION
-
-Example:
-
-ON DELETE CASCADE
-
-can cause child rows to be deleted when the parent is deleted.
-
-Cascade behavior must be chosen carefully because deleting one
-record can then affect many related records.
-""")
-
-# ============================================================
-# SECTION 118: PRACTICAL REPORT QUERY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("PRACTICAL REPORT")
-print("=" * 80)
-
-rows = connection.execute(
-    """
-    SELECT
-        d.department_name,
-        COUNT(e.employee_id) AS employees,
-        ROUND(AVG(e.salary), 2) AS average_salary,
-        MAX(e.salary) AS highest_salary
-    FROM departments AS d
-    LEFT JOIN employees AS e
-        ON e.department_id = d.department_id
-    GROUP BY
-        d.department_id,
-        d.department_name
-    ORDER BY
-        average_salary DESC
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-
-print("""
-This query combines:
-
-- LEFT JOIN
-- COUNT
-- AVG
-- MAX
-- GROUP BY
-- ORDER BY
-
-It demonstrates how database fundamentals combine to answer a
-business question.
-""")
-
-# ============================================================
-# SECTION 119: TRANSACTIONAL THINKING
-# ============================================================
-
-print("\n" + "=" * 80)
-print("TRANSACTIONAL THINKING")
-print("=" * 80)
-
-print("""
-A database transaction should represent a meaningful unit of
-business consistency.
-
-Examples:
-
-Bank transfer:
-    debit + credit
-
-Order creation:
-    order + order items
-
-Inventory reservation:
-    reserve inventory + create reservation record
-
-Employee creation:
-    employee + required related records
-
-The important question is not merely:
-
-"Which SQL statements should run?"
-
-The deeper question is:
-
-"Which changes must succeed or fail together?"
-""")
-
-# ============================================================
-# SECTION 120: DATABASE THINKING
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE THINKING")
-print("=" * 80)
-
-print("""
-Database fundamentals involve more than memorizing SQL syntax.
-
-A database professional must reason about:
-
-DATA
-----
-What information exists?
-
-IDENTITY
---------
-How is each entity uniquely identified?
-
-RELATIONSHIPS
--------------
-How are entities connected?
-
-INTEGRITY
----------
-What values and relationships are valid?
-
-TRANSACTIONS
-------------
-Which changes must happen together?
-
-CONCURRENCY
------------
-What happens when operations occur simultaneously?
-
-PERFORMANCE
------------
-How will the system behave as data grows?
-
-SECURITY
---------
-Who can access or modify the data?
-
-RECOVERY
---------
-What happens after failure?
-
-SCALABILITY
------------
-What happens when the workload becomes larger?
-
-These questions form the practical foundation of database design.
-""")
-
-# ============================================================
-# SECTION 121: FINAL TECHNICAL TERMINOLOGY
-# ============================================================
-
-print("\n" + "=" * 80)
-print("DATABASE TERMINOLOGY")
-print("=" * 80)
-
-print("""
 Database
-    Organized collection of data.
 
-DBMS
-    Software for managing databases.
+The database is therefore one component of a larger software system.
 
-RDBMS
-    Database management system based on the relational model.
+The application determines business behavior.
 
-Table
-    Relation represented as rows and columns.
+The database provides persistent storage, data integrity, transactions, query processing, and other database services.
 
-Row
-    Individual record.
+---
 
-Column
-    Attribute.
+# 171. Repository and Data Access Layers
 
-Schema
-    Database structure.
+A data-access layer can isolate database interaction from the rest of the application.
 
-Primary key
-    Principal unique identifier.
+This can provide:
 
-Foreign key
-    Reference to a key in another table.
+- Separation of concerns
+- Easier testing
+- Reusable data-access operations
+- Reduced duplication
 
-Candidate key
-    Minimal unique identifier.
+The exact architecture depends on the application.
 
-Composite key
-    Key containing multiple attributes.
+The important concept is that database interaction should have clearly defined responsibilities within the software system.
 
-Constraint
-    Rule protecting data integrity.
+---
 
-Index
-    Data structure supporting efficient access.
+# 172. Transaction Boundaries in Applications
 
-Query
-    Request for database information or modification.
+Application operations should define appropriate transaction boundaries.
 
-Transaction
-    Logical unit of database work.
+For example, creating an order may require multiple related operations.
 
-ACID
-    Atomicity, Consistency, Isolation, Durability.
+These operations may need to succeed together.
 
-Normalization
-    Structured reduction of redundancy and dependency problems.
+At the same time, transactions should not remain open while unrelated external operations are being performed.
 
-Denormalization
-    Intentional redundancy for specific reasons.
+Transaction boundaries therefore affect both correctness and performance.
 
-Join
-    Operation combining related records.
+---
 
-Aggregation
-    Combining rows into calculated results.
+# 173. Historical Consistency
 
-View
-    Stored query definition.
+Operational databases often need to preserve the state of information at the time an event occurred.
 
-Trigger
-    Automatic database-side event action.
+This is particularly important for:
 
-CTE
-    Named query expression using WITH.
+- Orders
+- Payments
+- Financial records
+- Contracts
+- Pricing
+- Inventory
 
-OLTP
-    Operational transaction processing.
+Current values should not automatically overwrite information that is historically important.
 
-OLAP
-    Analytical processing.
+---
 
-ETL
-    Extract, Transform, Load.
+# 174. Data Redundancy
 
-ELT
-    Extract, Load, Transform.
+Redundancy means that the same information exists in multiple places.
 
-Replication
-    Maintaining copies of data across database instances.
+Uncontrolled redundancy can create update anomalies.
 
-Partitioning
-    Dividing a logical table into physical partitions.
+Controlled redundancy can improve:
 
-Sharding
-    Distributing data across database nodes.
+- Read performance
+- Availability
+- Historical accuracy
+- Analytical efficiency
 
-Cardinality
-    Quantity or distinctness of data depending on context.
+The important distinction is whether redundancy is intentional and managed.
 
-Selectivity
-    Degree to which a condition filters rows.
+---
 
-Query plan
-    Execution strategy chosen for a query.
+# 175. Database Design Trade-Offs
 
-Deadlock
-    Circular waiting between transactions.
+Database design involves trade-offs rather than universal rules.
 
-Idempotency
-    Ability to safely repeat a logical operation without producing
-    unintended duplicate effects.
-""")
+Examples include:
 
-# ============================================================
-# CLOSE DATABASE
-# ============================================================
+### Normalization vs Performance
 
-connection.close()
+Normalization reduces redundancy but can require additional joins.
 
-print("\n" + "=" * 80)
-print("DATABASE FUNDAMENTALS SCRIPT EXECUTION COMPLETE")
-print("=" * 80)
+### Indexes vs Write Performance
+
+Indexes improve selected reads but increase write overhead.
+
+### Consistency vs Availability
+
+Distributed systems may need to balance strong consistency against availability during failures.
+
+### Simplicity vs Scalability
+
+A single database can be simpler to operate, while distributed architectures can support larger workloads at the cost of additional complexity.
+
+### Flexibility vs Integrity
+
+Flexible schemas can support rapidly changing data, while strict schemas provide stronger structural guarantees.
+
+---
+
+# 176. Relational Algebra
+
+Relational algebra provides a theoretical foundation for relational databases.
+
+Important operations include:
+
+- Selection
+- Projection
+- Join
+- Union
+- Difference
+- Cartesian product
+
+Selection corresponds conceptually to choosing rows based on conditions.
+
+Projection corresponds conceptually to choosing columns.
+
+Joins combine relations according to defined relationships.
+
+Understanding relational algebra helps explain how SQL queries can be transformed into different execution strategies.
+
+---
+
+# 177. Query Results and Stored Data
+
+A query result does not necessarily represent stored information.
+
+A database can dynamically calculate:
+
+- Totals
+- Averages
+- Rankings
+- Derived values
+- Joined information
+- Aggregated statistics
+
+Some calculated results may later be materialized for performance.
+
+This distinction between stored data and derived query results is fundamental to database design.
+
+---
+
+# 178. Reliability
+
+Database reliability depends on more than successful queries.
+
+Important reliability mechanisms include:
+
+- Constraints
+- Transactions
+- Recovery
+- Backups
+- Replication
+- Monitoring
+- Testing
+- Failover
+- Operational procedures
+
+Reliability is therefore an architectural property rather than a single database feature.
+
+---
+
+# 179. Failure Handling
+
+Database systems must account for different types of failures.
+
+These include:
+
+- Application failures
+- Transaction failures
+- Process failures
+- Machine failures
+- Storage failures
+- Network failures
+- Human errors
+- Data corruption
+
+The database's recovery mechanisms determine how the system returns to a valid state.
+
+---
+
+# 180. Database Security and Reliability Together
+
+Security and reliability are closely related.
+
+A database must protect information from unauthorized access while also protecting it from accidental or operational loss.
+
+Important areas include:
+
+- Access control
+- Encryption
+- Backups
+- Auditing
+- Recovery
+- Monitoring
+- Least privilege
+- Secure application connections
+
+---
+
+# 181. Core Database Mental Model
+
+The database concepts learned through the exercise can be understood as a connected system:
+
+- Business requirements determine the information that must exist.
+- Entities become logical data structures.
+- Tables represent structured collections of records.
+- Columns describe attributes.
+- Keys establish identity.
+- Foreign keys establish relationships.
+- Constraints protect integrity.
+- SQL provides the interface for manipulating and retrieving data.
+- Transactions group related operations.
+- Isolation controls concurrent behavior.
+- Indexes improve access patterns.
+- Query plans explain execution.
+- Backups and logs support recovery.
+- Replication improves availability and scalability.
+- Partitioning divides large datasets.
+- Sharding distributes data across nodes.
+- Analytical systems organize information differently from operational systems.
+
+This relationship between concepts is more important than memorizing individual SQL commands.
+
+---
+
+# 182. Core Database Terminology
+
+## Database
+
+An organized collection of data.
+
+## DBMS
+
+Software that manages databases.
+
+## Table
+
+A structured collection of records.
+
+## Row
+
+An individual record in a table.
+
+## Column
+
+An attribute of a record.
+
+## Schema
+
+The logical structure of a database.
+
+## Primary Key
+
+A key used to uniquely identify records.
+
+## Foreign Key
+
+A key that references a related record in another table.
+
+## Candidate Key
+
+A minimal set of attributes capable of uniquely identifying a record.
+
+## Composite Key
+
+A key consisting of multiple columns.
+
+## Constraint
+
+A rule enforced by the database.
+
+## Index
+
+A data structure designed to accelerate particular access patterns.
+
+## Query
+
+A request to retrieve or manipulate database information.
+
+## Transaction
+
+A logical unit of database work.
+
+## Commit
+
+The operation that finalizes a transaction.
+
+## Rollback
+
+The operation that reverses uncommitted transactional changes.
+
+## View
+
+A logical representation of a query.
+
+## Materialized View
+
+A physically stored query result.
+
+## Trigger
+
+Database-side logic automatically executed by a defined event.
+
+## Normalization
+
+A database design approach for reducing redundancy and dependency anomalies.
+
+## Denormalization
+
+Intentional introduction of redundancy for specific design objectives.
+
+## Replication
+
+Maintaining copies of database information across nodes.
+
+## Partitioning
+
+Dividing a logical dataset into physical partitions.
+
+## Sharding
+
+Distributing portions of a dataset across multiple database nodes.
+
+## OLTP
+
+Operational transaction processing.
+
+## OLAP
+
+Analytical processing.
+
+## ETL
+
+Extract, Transform, Load.
+
+## ELT
+
+Extract, Load, Transform.
+
+## Cardinality
+
+A measure describing distinct values or relationship multiplicity depending on context.
+
+## Selectivity
+
+The degree to which a condition narrows the candidate dataset.
+
+## Concurrency
+
+Simultaneous database activity by multiple transactions or users.
+
+## Deadlock
+
+A situation in which transactions wait indefinitely for resources held by each other.
+
+## Replication Lag
+
+The delay between a change on one database node and its availability on a replica.
+
+## Idempotency
+
+The property that repeated execution does not produce unintended repeated effects.
+
+---
+
+# 183. Practical Database Concepts Demonstrated
+
+The practical learning exercise connected theoretical database concepts with actual database behavior.
+
+The concepts demonstrated include:
+
+- Creating a relational database
+- Creating tables
+- Defining columns
+- Selecting data types
+- Creating primary keys
+- Creating foreign keys
+- Enforcing constraints
+- Establishing relationships
+- Inserting records
+- Retrieving records
+- Filtering records
+- Sorting records
+- Updating records
+- Deleting records
+- Handling NULL values
+- Joining tables
+- Aggregating information
+- Grouping records
+- Using subqueries
+- Using existence checks
+- Using CTEs
+- Working with views
+- Understanding normalization
+- Working with transactions
+- Committing changes
+- Rolling back changes
+- Understanding savepoints
+- Understanding concurrency
+- Understanding isolation
+- Understanding locking
+- Understanding deadlocks
+- Understanding indexes
+- Understanding query execution
+- Understanding database security
+- Understanding backups
+- Understanding replication
+- Understanding partitioning
+- Understanding sharding
+- Understanding analytical databases
+- Understanding application-database interaction
+
+---
+
+# 184. Database Fundamentals as an Engineering Discipline
+
+Database fundamentals extend beyond learning SQL syntax.
+
+A database engineer or software developer must understand how data behaves throughout its lifecycle.
+
+This includes understanding:
+
+- How data is modeled
+- How records are identified
+- How relationships are represented
+- How integrity is enforced
+- How concurrent operations interact
+- How failures are recovered
+- How queries are optimized
+- How indexes affect workloads
+- How applications communicate with databases
+- How schemas evolve
+- How data is secured
+- How databases scale
+- How historical information is preserved
+- How operational and analytical workloads differ
+
+Database knowledge therefore connects software development, system architecture, data engineering, security, and application design.
+
+---
+
+# 185. Database Fundamentals: Conceptual Flow
+
+A complete database system can be understood through the following conceptual flow:
+
+Business Requirements
+
+↓
+
+Entities and Relationships
+
+↓
+
+Database Schema
+
+↓
+
+Tables, Columns, Keys, and Constraints
+
+↓
+
+Data
+
+↓
+
+SQL Queries
+
+↓
+
+Query Processing
+
+↓
+
+Query Optimization
+
+↓
+
+Execution Plan
+
+↓
+
+Storage and Indexes
+
+↓
+
+Transactions and Concurrency
+
+↓
+
+Logging and Recovery
+
+↓
+
+Replication and Availability
+
+↓
+
+Partitioning and Scaling
+
+↓
+
+Operational and Analytical Systems
+
+This flow demonstrates how basic database concepts connect to advanced database architecture.
+
+---
+
+# 186. Final Working Perspective
+
+Database fundamentals provide the foundation for understanding how modern applications store and manage persistent information.
+
+The most important concepts are interconnected.
+
+A table is not simply a collection of rows.
+
+A key is not simply an identifier.
+
+A foreign key is not simply another column.
+
+A transaction is not simply a group of SQL statements.
+
+An index is not simply a performance switch.
+
+A database is a system that combines data modeling, integrity, querying, transactions, concurrency, storage, security, recovery, and performance management.
+
+Understanding these relationships makes it possible to reason about database behavior rather than treating the database as a black box.
+
+The practical exercises provide a foundation for understanding how relational databases behave when data is created, related, queried, modified, constrained, transacted, indexed, and managed as part of a real software system.
