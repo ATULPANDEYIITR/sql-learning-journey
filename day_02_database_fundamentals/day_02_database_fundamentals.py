@@ -1,2241 +1,4760 @@
-# AI Problem Solving
+"""
+DATABASE FUNDAMENTALS
+=====================
 
-## Intelligent Agents, Rational Agents, Environments, State, Actions, Goals and Utility
+A detailed, executable study script covering database fundamentals from
+basic concepts to advanced database engineering principles.
 
-## 1. Artificial Intelligence and Problem Solving
+This script uses Python's built-in sqlite3 module so that the examples
+can be executed without installing an external database server.
 
-Artificial Intelligence studies computational systems that can perceive information, reason about situations, make decisions, perform actions and, in many cases, learn from experience.
+The purpose of this file is educational. Each section explains a
+database concept and, where practical, demonstrates it using SQLite.
 
-One of the most useful abstractions in AI is the **agent**.
+Topics covered include:
 
-An agent receives information from an environment through sensors or other input mechanisms, processes that information, chooses an action and affects the environment through actuators or other output mechanisms.
+    1. What a database is
+    2. DBMS and RDBMS
+    3. Relational database concepts
+    4. Tables, rows, columns and records
+    5. Schemas
+    6. SQL
+    7. SQL command categories
+    8. Creating databases and tables
+    9. Data types
+    10. Primary keys
+    11. Foreign keys
+    12. Candidate keys
+    13. Alternate keys
+    14. Composite keys
+    15. Natural and surrogate keys
+    16. Constraints
+    17. INSERT
+    18. SELECT
+    19. UPDATE
+    20. DELETE
+    21. WHERE
+    22. ORDER BY
+    23. LIMIT
+    24. DISTINCT
+    25. NULL
+    26. Three-valued logic
+    27. Aggregate functions
+    28. GROUP BY
+    29. HAVING
+    30. JOINs
+    31. Subqueries
+    32. CTEs
+    33. Recursive CTEs
+    34. Set operations
+    35. CASE expressions
+    36. Views
+    37. Indexes
+    38. Query optimization
+    39. EXPLAIN QUERY PLAN
+    40. Transactions
+    41. ACID
+    42. COMMIT
+    43. ROLLBACK
+    44. SAVEPOINT
+    45. Isolation
+    46. Locks
+    47. Deadlocks
+    48. Normalization
+    49. Denormalization
+    50. Referential integrity
+    51. Cascading actions
+    52. Database anomalies
+    53. Entity relationships
+    54. One-to-one relationships
+    55. One-to-many relationships
+    56. Many-to-many relationships
+    57. Junction tables
+    58. Window functions
+    59. UPSERT
+    60. Triggers
+    61. Auditing
+    62. JSON and semi-structured data
+    63. OLTP
+    64. OLAP
+    65. Fact and dimension tables
+    66. ETL and ELT
+    67. Replication
+    68. Partitioning
+    69. Sharding
+    70. Connection pooling
+    71. ORM concepts
+    72. N+1 query problem
+    73. Database migrations
+    74. SQL injection
+    75. Parameterized queries
+    76. Database security
+    77. Backup and recovery
+    78. WAL and transaction logs
+    79. CAP theorem
+    80. Relational vs NoSQL databases
+    81. Distributed databases
+    82. Cardinality
+    83. Selectivity
+    84. Covering indexes
+    85. Query design
+    86. Data modeling
+    87. Historical data
+    88. Derived data
+    89. Idempotency
+    90. Database testing
+    91. Observability
+    92. Production database architecture
+    93. Practical e-commerce database
+    94. Database terminology
 
-The basic interaction can be represented as:
+SQLite is used for executable demonstrations. Some concepts such as
+stored procedures, users/roles, replication and sharding are discussed
+conceptually because SQLite is an embedded database and does not provide
+the same server-side capabilities as PostgreSQL, MySQL, SQL Server or
+Oracle.
+"""
 
-```text
-Environment
-     |
-     v
-  Sensors
-     |
-     v
-   Agent
-     |
-     v
- Actuators
-     |
-     v
-Environment
-```
+import sqlite3
+from datetime import datetime
 
-The agent does not operate in isolation. Its behavior is meaningful only in relation to an environment and a task.
 
-For AI problem solving, the important questions are:
+# ============================================================
+# 1. HELPER FUNCTIONS
+# ============================================================
 
-* What does the agent perceive?
-* What does the agent know?
-* What states can exist?
-* What actions are available?
-* What happens after an action?
-* What is the desired outcome?
-* How should alternative outcomes be compared?
-* What does it mean for the agent to behave rationally?
+def title(text):
+    print("\n")
+    print("=" * 78)
+    print(text.upper())
+    print("=" * 78)
 
-These questions lead directly to the concepts of intelligent agents, rationality, states, actions, goals, utility and search.
 
----
+def explain(text):
+    print(f"\n{text}\n")
 
-# 2. Intelligent Agents
 
-An **agent** is an entity that perceives its environment and acts upon that environment.
+def show_rows(cursor, rows=None):
+    if rows is None:
+        rows = cursor.fetchall()
 
-A general agent cycle is:
+    if not rows:
+        print("(no rows)")
+        return
 
-```text
-Perceive
-   ↓
-Interpret
-   ↓
-Decide
-   ↓
-Act
-   ↓
-Observe result
-   ↓
-Repeat
-```
+    columns = [description[0] for description in cursor.description]
+
+    print(" | ".join(columns))
+    print("-" * 78)
+
+    for row in rows:
+        print(" | ".join(str(value) for value in row))
+
+
+def execute_and_show(connection, sql, parameters=()):
+    cursor = connection.execute(sql, parameters)
+
+    if cursor.description:
+        show_rows(cursor)
+
+    return cursor
+
+
+# ============================================================
+# 2. WHAT IS A DATABASE?
+# ============================================================
+
+title("1. What is a Database")
+
+explain("""
+A database is an organized collection of data that can be stored,
+retrieved, modified and managed efficiently.
+
+The important idea is not merely storage.
+
+A database provides a structured mechanism for:
+
+    - storing data
+    - retrieving data
+    - changing data
+    - enforcing rules
+    - maintaining relationships
+    - controlling access
+    - handling concurrent operations
+    - recovering from failures
+    - maintaining consistency
+
+For example, an e-commerce system may need to store:
+
+    customers
+    products
+    orders
+    payments
+    shipments
+    inventory
+
+A simple file can store this information, but a database provides
+mechanisms that make the data reliable and manageable when many
+operations and users are involved.
+""")
+
+
+# ============================================================
+# 3. DBMS AND RDBMS
+# ============================================================
+
+title("2. DBMS and RDBMS")
+
+explain("""
+DBMS stands for Database Management System.
+
+A DBMS is software responsible for managing databases.
 
 Examples include:
 
-* a robot
-* a self-driving vehicle
-* a chess program
-* a recommendation system
-* a software automation system
-* a navigation system
-* a game-playing program
+    SQLite
+    PostgreSQL
+    MySQL
+    Microsoft SQL Server
+    Oracle Database
+    MongoDB
 
-An agent may be physical or purely computational.
+RDBMS means Relational Database Management System.
 
-A physical robot can use cameras, microphones, lidar and other sensors. A software agent can receive information through APIs, databases, files, messages or user input.
+A relational database organizes information primarily into tables
+and represents relationships between tables using keys.
 
----
+Examples of relational databases include:
 
-# 3. Percepts
+    PostgreSQL
+    MySQL
+    Oracle
+    SQL Server
+    SQLite
 
-A **percept** is the information an agent receives from its environment at a particular point in time.
+SQLite is relational, although its architecture is very different
+from a traditional client-server database.
+""")
 
-For a vehicle, a percept might contain:
 
-```text
-traffic light = red
-speed = 20 km/h
-pedestrian = detected
-location = intersection
-```
+# ============================================================
+# 4. RELATIONAL MODEL
+# ============================================================
 
-A percept sequence is the complete sequence of percepts received by an agent.
+title("3. Relational Database Model")
 
-For example:
+explain("""
+The relational model represents data using relations.
 
-```text
-t1: road clear
-t2: pedestrian detected
-t3: traffic light red
-t4: obstacle detected
-```
+In practical SQL terminology:
 
-The agent's decision can depend on the current percept, the complete percept history, or an internal representation derived from that history.
+    relation -> table
+    tuple    -> row
+    attribute -> column
 
----
+Suppose we have:
 
-# 4. Sensors
+customers
+------------------------------------------------
+id | name | email
+------------------------------------------------
+1  | Ravi | ravi@example.com
+2  | Neha | neha@example.com
 
-A **sensor** is a mechanism through which an agent obtains information from the environment.
+The table represents a relation.
 
-Examples:
+Each row represents one entity occurrence.
 
-### Robot
+Each column represents an attribute of that entity.
+""")
 
-```text
-Camera
-Lidar
-Microphone
-Touch sensor
-Distance sensor
-```
 
-### Autonomous vehicle
+# ============================================================
+# 5. CREATE DATABASE
+# ============================================================
 
-```text
-Camera
-Radar
-Lidar
-GPS
-Speed sensor
-Inertial sensors
-```
+title("4. Creating a Database")
 
-### Software agent
+explain("""
+SQLite can create a database directly in memory.
 
-```text
-API
-Database
-File system
-User input
-Network messages
-Logs
-```
+The following connection creates a temporary database that exists
+only for the lifetime of this Python process.
+""")
 
-The quality and availability of sensor information directly influence the agent's ability to make decisions.
+connection = sqlite3.connect(":memory:")
 
----
+# SQLite does not enforce foreign keys unless enabled.
+connection.execute("PRAGMA foreign_keys = ON")
 
-# 5. Actuators
 
-An **actuator** allows an agent to affect its environment.
+# ============================================================
+# 6. TABLES, ROWS AND COLUMNS
+# ============================================================
 
-Examples:
+title("5. Tables, Rows and Columns")
 
-### Robot
-
-```text
-Motors
-Robot arm
-Gripper
-Speaker
-```
-
-### Vehicle
-
-```text
-Steering
-Brake
-Accelerator
-Indicators
-```
-
-### Software agent
-
-```text
-API request
-Database update
-Message
-File modification
-Command execution
-```
-
-Sensors provide information to the agent. Actuators allow the agent to produce effects in the environment.
-
----
-
-# 6. Agent Function
-
-The agent function provides an abstract mathematical description of the relationship between percept history and action.
-
-It can be represented as:
-
-```text
-f(percept sequence) = action
-```
+explain("""
+A table describes a particular type of data.
 
 For example:
 
-```text
-f([dirty]) = clean
-f([obstacle]) = turn
-f([danger]) = escape
-```
+    customers
+    products
+    orders
 
-The **agent function** is an abstract concept.
+A row represents one record.
 
-The **agent program** is the actual implementation of that function.
+A column represents one property of the record.
 
-The **architecture** is the platform on which the program operates.
+The table definition establishes structural rules for the data.
+""")
 
-A useful distinction is therefore:
+connection.execute("""
+CREATE TABLE customers (
+    customer_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    city TEXT,
+    created_at TEXT NOT NULL
+)
+""")
 
-```text
-Agent function
-      ↓
-Abstract behavior
+connection.execute("""
+CREATE TABLE products (
+    product_id INTEGER PRIMARY KEY,
+    product_name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    price REAL NOT NULL,
+    stock_quantity INTEGER NOT NULL DEFAULT 0
+)
+""")
 
-Agent program
-      ↓
-Implementation
 
-Architecture
-      ↓
-Computational platform
-```
+# ============================================================
+# 7. DATA TYPES
+# ============================================================
 
----
+title("6. Data Types")
 
-# 7. Rational Agents
+explain("""
+A database uses data types to describe what kind of value a column
+can contain.
 
-A **rational agent** chooses the action that is expected to maximize its performance measure based on the information available to it.
+Common SQL data types include:
 
-Rationality does not mean that the agent always obtains the best actual result.
+    INTEGER
+    DECIMAL
+    NUMERIC
+    REAL
+    CHAR
+    VARCHAR
+    TEXT
+    DATE
+    TIMESTAMP
+    BOOLEAN
+    BINARY
 
-It means that the agent selects the action that is expected to produce the best result given its:
+Different database systems implement types differently.
 
-* percept sequence
-* knowledge
-* available actions
-* environment
-* performance measure
-* computational limitations
+SQLite uses a flexible type system based around storage classes:
 
-Suppose an agent has two possible routes.
+    NULL
+    INTEGER
+    REAL
+    TEXT
+    BLOB
 
-```text
-Route A:
-Expected performance = 85
+This is one reason SQLite examples should not automatically be
+treated as identical to PostgreSQL or MySQL behavior.
+""")
 
-Route B:
-Expected performance = 70
-```
 
-Choosing Route A can be rational even if Route B eventually turns out to be faster.
+# ============================================================
+# 8. PRIMARY KEY
+# ============================================================
 
-The agent does not normally know the future with certainty.
+title("7. Primary Key")
 
-Therefore:
+explain("""
+A primary key uniquely identifies a row.
 
-```text
-Rational decision ≠ guaranteed successful outcome
-```
+A good primary key should provide unique identity.
 
-Rationality concerns the quality of the decision given the information available when the decision was made.
+For customers:
 
----
+    customer_id
 
-# 8. Rationality Is Not Omniscience
+For products:
 
-**Omniscience** would mean knowing the actual outcome of every possible action before acting.
+    product_id
 
-Real agents are not normally omniscient.
+A primary key cannot contain duplicate values.
 
-Consider a navigation agent that chooses a route because historical information indicates that it is usually faster.
+A primary key normally should not be NULL.
 
-An unexpected accident then creates a large traffic delay.
+In this database:
 
-The poor outcome does not automatically mean that the original decision was irrational.
+    customer_id INTEGER PRIMARY KEY
 
-The agent made its decision using the information available at that time.
+is the primary key of customers.
+""")
 
-Rationality is therefore based on expected consequences rather than perfect knowledge of future events.
 
----
+# ============================================================
+# 9. INSERT DATA
+# ============================================================
 
-# 9. Performance Measures
+title("8. INSERT")
 
-A **performance measure** specifies how the success of an agent's behavior is evaluated.
+explain("""
+INSERT adds records to a table.
 
-For a delivery robot, possible performance measures include:
+Always specify the target columns explicitly when writing application
+SQL. This makes the statement easier to understand and safer when
+the table structure changes.
+""")
 
-* safety
-* delivery accuracy
-* delivery time
-* energy consumption
-* cost
-* customer satisfaction
+customers = [
+    (1, "Ravi", "ravi@example.com", "Lucknow", "2026-01-10"),
+    (2, "Neha", "neha@example.com", "Delhi", "2026-01-11"),
+    (3, "Aman", "aman@example.com", "Mumbai", "2026-01-12"),
+    (4, "Priya", "priya@example.com", "Pune", "2026-01-13"),
+]
 
-Different performance measures produce different rational behaviors.
+connection.executemany("""
+INSERT INTO customers
+(customer_id, name, email, city, created_at)
+VALUES (?, ?, ?, ?, ?)
+""", customers)
 
-For example, consider two routes:
+products = [
+    (1, "Laptop", "Electronics", 75000, 10),
+    (2, "Mouse", "Electronics", 1200, 50),
+    (3, "Keyboard", "Electronics", 2500, 25),
+    (4, "Office Chair", "Furniture", 12000, 15),
+    (5, "Desk", "Furniture", 18000, 8),
+]
 
-```text
-Route A:
-10 minutes
-high risk
+connection.executemany("""
+INSERT INTO products
+(product_id, product_name, category, price, stock_quantity)
+VALUES (?, ?, ?, ?, ?)
+""", products)
 
-Route B:
-20 minutes
-very low risk
-```
+connection.commit()
 
-If the performance measure strongly prioritizes safety, Route B may be rational.
+execute_and_show(
+    connection,
+    "SELECT * FROM customers"
+)
 
-If the performance measure strongly prioritizes speed and accepts greater risk, the decision may differ.
 
-Therefore rationality cannot be defined independently of the performance measure.
+# ============================================================
+# 10. PARAMETERIZED QUERIES
+# ============================================================
 
----
+title("9. Parameterized Queries")
 
-# 10. PEAS
+explain("""
+Parameterized queries separate SQL instructions from data values.
 
-**PEAS** is a framework for specifying an agent's task environment.
+This is important for both correctness and security.
 
-```text
-P = Performance measure
-E = Environment
-A = Actuators
-S = Sensors
-```
+Avoid constructing SQL by concatenating user input.
 
-For an autonomous taxi:
+Unsafe idea:
 
-## Performance
+    SELECT * FROM users WHERE name = '""" + "user_input" + """'
 
-* safety
-* travel time
-* passenger comfort
-* energy efficiency
-* legal compliance
+Safe approach:
 
-## Environment
+    SELECT * FROM users WHERE name = ?
 
-* roads
-* vehicles
-* pedestrians
-* traffic signals
-* weather
+The parameter is supplied separately.
+""")
 
-## Actuators
+name_to_find = "Ravi"
 
-* steering
-* brake
-* accelerator
-* indicators
+execute_and_show(
+    connection,
+    "SELECT * FROM customers WHERE name = ?",
+    (name_to_find,)
+)
 
-## Sensors
 
-* cameras
-* radar
-* lidar
-* GPS
-* speed sensors
+# ============================================================
+# 11. SELECT
+# ============================================================
 
-PEAS provides a structured way of defining what an agent is supposed to achieve and what it can perceive and control.
+title("10. SELECT")
 
----
+explain("""
+SELECT retrieves data.
 
-# 11. Task Environment Properties
+The simplest form is:
 
-AI environments can be classified according to several dimensions.
+    SELECT column1, column2
+    FROM table;
 
-## Fully Observable vs Partially Observable
+Using explicit columns is usually preferable to SELECT * in
+production application queries because it makes the required data
+clear and avoids retrieving unnecessary columns.
+""")
 
-### Fully observable
+execute_and_show(
+    connection,
+    """
+    SELECT customer_id, name, email
+    FROM customers
+    """
+)
 
-The agent can obtain all information relevant to decision making from its percepts.
 
-Chess is commonly treated as fully observable because the board position is visible to both players.
+# ============================================================
+# 12. WHERE
+# ============================================================
 
-### Partially observable
+title("11. WHERE")
 
-Some relevant information is hidden, unavailable or uncertain.
+explain("""
+WHERE filters rows.
+
+The condition is evaluated for each candidate row.
 
 Examples include:
 
-* poker
-* medical diagnosis
-* driving in fog
-* navigation behind obstacles
-* financial decision making
+    price > 1000
+    city = 'Delhi'
+    stock_quantity > 0
+
+Multiple conditions can be combined using:
+
+    AND
+    OR
+    NOT
+""")
 
-A partially observable environment may require an internal state or belief state.
+execute_and_show(
+    connection,
+    """
+    SELECT product_name, price
+    FROM products
+    WHERE price > ?
+    """,
+    (5000,)
+)
 
----
 
-# 12. Deterministic vs Stochastic
+# ============================================================
+# 13. COMPARISON OPERATORS
+# ============================================================
+
+title("12. Comparison Operators")
+
+explain("""
+Common comparison operators are:
 
-A **deterministic environment** has predictable transitions.
+    =
+    <>
+    !=
+    >
+    <
+    >=
+    <=
 
-If the current state and action are known:
+Additional operators include:
 
-```text
-next state = completely determined
-```
+    BETWEEN
+    IN
+    LIKE
+    IS NULL
+    IS NOT NULL
+""")
 
-Formally:
+execute_and_show(
+    connection,
+    """
+    SELECT product_name, price
+    FROM products
+    WHERE price BETWEEN ? AND ?
+    """,
+    (1000, 20000)
+)
 
-```text
-RESULT(state, action) = next state
-```
 
-A **stochastic environment** contains uncertainty.
+# ============================================================
+# 14. DISTINCT
+# ============================================================
 
-The same action may produce different outcomes.
+title("13. DISTINCT")
 
-For example:
+explain("""
+DISTINCT removes duplicate result values.
 
-```text
-Action: Move forward
+It is useful when asking for unique values rather than individual rows.
+""")
 
-Success       = 0.90
-Slip          = 0.07
-Obstacle      = 0.03
-```
+execute_and_show(
+    connection,
+    """
+    SELECT DISTINCT category
+    FROM products
+    """
+)
 
-The agent must reason using probabilities.
 
-A stochastic transition can be represented as:
+# ============================================================
+# 15. ORDER BY
+# ============================================================
 
-```text
-P(next_state | current_state, action)
-```
+title("14. ORDER BY")
 
----
+explain("""
+ORDER BY controls the order of the result.
 
-# 13. Episodic vs Sequential
+ASC means ascending.
 
-An **episodic environment** consists of relatively independent decisions.
+DESC means descending.
+""")
 
-For example, an image classification system may classify one image at a time.
+execute_and_show(
+    connection,
+    """
+    SELECT product_name, price
+    FROM products
+    ORDER BY price DESC
+    """
+)
 
-The classification of one image does not necessarily affect the next image.
 
-A **sequential environment** is one where current actions influence future states.
+# ============================================================
+# 16. LIMIT
+# ============================================================
 
-Examples:
+title("15. LIMIT")
 
-* chess
-* driving
-* navigation
-* robotics
-* financial planning
+explain("""
+LIMIT restricts the number of rows returned.
 
-Sequential environments require consideration of future consequences.
+It is often used for pagination or top-N queries.
 
----
+LIMIT by itself does not guarantee which rows are returned unless
+the query also specifies an appropriate ORDER BY.
+""")
 
-# 14. Static vs Dynamic
+execute_and_show(
+    connection,
+    """
+    SELECT product_name, price
+    FROM products
+    ORDER BY price DESC
+    LIMIT 3
+    """
+)
 
-A **static environment** does not change while the agent is making a decision.
 
-A **dynamic environment** can change while the agent is thinking.
+# ============================================================
+# 17. UPDATE
+# ============================================================
 
-Chess is relatively static during a player's turn.
+title("16. UPDATE")
 
-Driving is highly dynamic.
+explain("""
+UPDATE modifies existing rows.
 
-A dynamic environment may require:
+The WHERE condition is critical.
 
-* rapid perception
-* continuous state updates
-* prediction
-* real-time decisions
-* adaptation
+Without WHERE, every row may be updated.
+""")
 
-An action plan that was correct several seconds ago may no longer be appropriate after the environment changes.
+connection.execute("""
+UPDATE products
+SET stock_quantity = stock_quantity + 5
+WHERE product_id = ?
+""", (1,))
 
----
+connection.commit()
 
-# 15. Discrete vs Continuous
+execute_and_show(
+    connection,
+    "SELECT * FROM products WHERE product_id = 1"
+)
 
-A **discrete environment** contains distinct states or actions.
 
-Chess is largely discrete.
+# ============================================================
+# 18. DELETE
+# ============================================================
 
-A **continuous environment** contains variables that can take values over continuous ranges.
+title("17. DELETE")
 
-Examples:
+explain("""
+DELETE removes rows.
 
-```text
-Speed = 62.31 km/h
-Steering angle = 13.7 degrees
-Temperature = 27.43°C
-```
+As with UPDATE, an accidental missing WHERE clause can affect every
+row in the table.
 
-Real systems often contain both discrete and continuous components.
+Production applications often use transactions around important
+modification operations.
+""")
 
-For example:
+connection.execute("""
+DELETE FROM customers
+WHERE customer_id = ?
+""", (4,))
 
-```text
-Discrete action:
-Brake
+connection.commit()
 
-Continuous parameter:
-Brake pressure = 0.73
-```
+execute_and_show(
+    connection,
+    "SELECT * FROM customers"
+)
 
----
 
-# 16. Single-Agent vs Multi-Agent
+# ============================================================
+# 19. NULL
+# ============================================================
 
-In a **single-agent environment**, the agent is the main decision maker.
+title("18. NULL")
 
-Examples:
+explain("""
+NULL represents the absence of a value.
 
-* solving a maze
-* solving a puzzle
+NULL is not the same as:
 
-In a **multi-agent environment**, other agents can influence the result.
+    0
+    ''
+    FALSE
+    'NULL'
 
-Examples:
+NULL represents unknown, missing or inapplicable information,
+depending on the context.
 
-* chess
-* football
-* autonomous traffic
-* competitive markets
+This distinction is important because SQL uses three-valued logic:
 
-Other agents may be:
+    TRUE
+    FALSE
+    UNKNOWN
 
-* cooperative
-* competitive
-* partially cooperative
-* unpredictable
+A comparison such as:
 
-The presence of other decision makers significantly changes the problem because the agent must account for their possible actions.
+    city = NULL
 
----
+does not correctly test for NULL.
 
-# 17. Known vs Unknown Environments
+Use:
 
-In a **known environment**, the agent knows the relevant rules governing the environment.
-
-In an **unknown environment**, the agent may not know:
-
-* available actions
-* action consequences
-* transition probabilities
-* risks
-* relevant state relationships
-
-The agent may therefore need to learn the environment model through interaction.
-
----
-
-# 18. State
-
-A **state** describes the condition of an environment at a particular point in time.
-
-For a grid world:
-
-```text
-(row=1, column=1)
-```
-
-may represent the agent's current state.
-
-A richer state might contain:
-
-```text
-position
-battery
-package status
-obstacles
-time
-known information
-```
-
-The appropriate state representation depends on the problem.
-
-The important principle is that the state should contain information relevant to future decision making.
-
----
-
-# 19. State Representation
-
-Suppose a vehicle's complete state contains:
-
-```text
-location
-speed
-fuel
-engine temperature
-weather
-traffic
-road condition
-time
-```
-
-A route-planning problem may only need:
-
-```text
-location
-```
-
-This is an example of **state abstraction**.
-
-A detailed state:
-
-```text
-location = A
-speed = 60
-fuel = 70
-temperature = 85
-weather = clear
-traffic = moderate
-```
-
-An abstract state:
-
-```text
-location = A
-```
-
-Abstraction reduces computational complexity.
-
-But excessive abstraction can remove information required for correct decisions.
-
-The challenge is to retain distinctions that matter while eliminating irrelevant detail.
-
----
-
-# 20. Actions
-
-An **action** is something the agent can perform.
-
-For a grid-world agent:
-
-```text
-UP
-DOWN
-LEFT
-RIGHT
-```
-
-An action changes the state.
-
-For example:
-
-```text
-Current state:
-(1,1)
-
-Action:
-RIGHT
-
-New state:
-(1,2)
-```
-
-The relationship between actions and resulting states is described by the transition model.
-
----
-
-# 21. Transition Model
-
-The **transition model** describes what happens when an action is applied to a state.
-
-In a deterministic environment:
-
-```text
-RESULT(state, action) = next_state
-```
-
-For example:
-
-```text
-RESULT((1,1), RIGHT) = (1,2)
-```
-
-In a stochastic environment, a transition model describes a probability distribution:
-
-```text
-P(next_state | state, action)
-```
-
-For example:
-
-```text
-P(A | state, action) = 0.8
-P(B | state, action) = 0.2
-```
-
-The transition model is central to planning because the agent must predict the consequences of actions.
-
----
-
-# 22. Goals
-
-A **goal** describes a desired condition.
-
-Suppose:
-
-```text
-Initial state = (0,0)
-Goal = (4,4)
-```
-
-The agent must find actions that transform the initial state into a state satisfying the goal.
-
-A goal is not the same as an action.
-
-```text
-Goal:
-Reach the airport.
-
-Action:
-Drive east.
-```
-
-Another example:
-
-```text
-Goal:
-Deliver package.
-
-Actions:
-Move
-Pick up
-Drive
-Drop off
-```
-
-The goal specifies the desired outcome.
-
-The action specifies a way of changing the state.
-
----
-
-# 23. Goal Test
-
-A **goal test** determines whether a state satisfies the goal.
-
-For example:
-
-```python
-def goal_test(city):
-    return city == "Delhi"
-```
-
-The goal test returns:
-
-```text
-True
-```
-
-when the desired condition is satisfied.
-
-A goal test does not necessarily prescribe one specific path.
-
-For example, if the goal is:
-
-```text
-Reach Delhi
-```
-
-then any valid route that reaches Delhi may satisfy the goal.
-
----
-
-# 24. Problem Formulation
-
-A classical AI search problem can be represented using:
-
-1. Initial state
-2. Actions
-3. Transition model
-4. Goal test
-5. Path cost
-
-For a route-planning problem:
-
-```text
-Initial state:
-Lucknow
-
-Actions:
-Travel to connected cities
-
-Transition model:
-Move from one city to another
-
-Goal:
-Delhi
-
-Path cost:
-Distance, time, fuel or another chosen cost
-```
-
-Problem formulation converts a real-world objective into a formal computational problem.
-
----
-
-# 25. State-Space Search
-
-A **state-space graph** represents possible states and transitions.
-
-For example:
-
-```text
-        A
-       / \
-      B   C
-      |   |
-      D   E
-       \ /
-        G
-```
-
-Here:
-
-```text
-Nodes = states
-Edges = transitions/actions
-```
-
-The agent searches through this space to find a path from an initial state to a goal state.
-
-A path is a sequence of states or actions.
-
-For example:
-
-```text
-A → B → D → G
-```
-
----
-
-# 26. Search Tree vs State-Space Graph
-
-A search tree may contain multiple nodes representing the same underlying state because the state can be reached through different paths.
-
-Suppose:
-
-```text
-        A
-       / \
-      B   C
-       \ /
-        D
-```
-
-D can be reached through:
-
-```text
-A → B → D
-```
+    city IS NULL
 
 or:
 
-```text
-A → C → D
-```
+    city IS NOT NULL
+""")
 
-A search tree can represent these as separate tree nodes.
+connection.execute("""
+CREATE TABLE null_demo (
+    id INTEGER PRIMARY KEY,
+    value TEXT
+)
+""")
 
-A state-space graph represents D as one state with multiple incoming transitions.
+connection.executemany(
+    "INSERT INTO null_demo (id, value) VALUES (?, ?)",
+    [
+        (1, "hello"),
+        (2, None),
+        (3, "world"),
+    ]
+)
 
-This distinction is important when implementing graph search.
+execute_and_show(
+    connection,
+    """
+    SELECT *
+    FROM null_demo
+    WHERE value IS NULL
+    """
+)
 
----
 
-# 27. Path Cost
+# ============================================================
+# 20. CONSTRAINTS
+# ============================================================
 
-**Path cost** is the cumulative cost of reaching a state.
+title("19. Constraints")
 
-If individual actions have costs:
+explain("""
+Constraints are database-level rules that protect data integrity.
 
-```text
-4
-3
-7
-2
-```
+Important constraints include:
 
-then:
+    PRIMARY KEY
+    FOREIGN KEY
+    UNIQUE
+    NOT NULL
+    CHECK
+    DEFAULT
 
-```text
-Total path cost = 4 + 3 + 7 + 2
-                = 16
-```
+Constraints are important because application code alone is not a
+complete integrity mechanism.
 
-The cost can represent:
+A database should protect critical invariants itself.
+""")
 
-* distance
-* time
-* money
-* energy
-* risk
-* computation
+connection.execute("""
+CREATE TABLE constrained_products (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    price REAL NOT NULL CHECK(price >= 0),
+    sku TEXT UNIQUE,
+    quantity INTEGER NOT NULL DEFAULT 0 CHECK(quantity >= 0)
+)
+""")
 
-The definition of optimality depends on what cost means.
 
-A shortest path is not necessarily the safest path.
+# ============================================================
+# 21. FOREIGN KEYS
+# ============================================================
 
-A cheapest path is not necessarily the fastest path.
+title("20. Foreign Keys")
 
----
-
-# 28. Breadth-First Search
-
-**Breadth-first search**, or BFS, expands the shallowest nodes first.
-
-It uses a FIFO queue:
-
-```text
-First In
-   ↓
-First Out
-```
-
-Conceptually:
-
-```text
-A
-|
-+-- B
-+-- C
-    |
-    +-- D
-```
-
-BFS explores level by level.
-
-For a branching factor `b` and shallowest solution depth `d`, common complexity descriptions are:
-
-```text
-Time:
-O(b^d)
-
-Space:
-O(b^d)
-```
-
-When every action has the same cost, BFS finds a shallowest solution and therefore an optimal solution with respect to the number of actions.
-
----
-
-# 29. Depth-First Search
-
-**Depth-first search**, or DFS, explores one branch as deeply as possible before backtracking.
-
-It can be implemented using a stack.
-
-Typical complexity:
-
-```text
-Time:
-O(b^m)
-
-Space:
-O(bm)
-```
-
-where:
-
-```text
-b = branching factor
-m = maximum depth
-```
-
-DFS is not generally optimal.
-
-It can also fail to find a solution in certain infinite-depth or cyclic search spaces without appropriate controls.
-
-Its major advantage is that it can use much less memory than breadth-first search in many situations.
-
----
-
-# 30. Uniform-Cost Search
-
-**Uniform-cost search**, or UCS, expands the node with the smallest accumulated path cost.
-
-It is useful when actions have different costs.
+explain("""
+A foreign key establishes a relationship between tables.
 
 Suppose:
 
-```text
-A → B = 2
-A → C = 5
-B → G = 10
-C → G = 2
-```
+    customers.customer_id
 
-Then:
+is referenced by:
 
-```text
-A → B → G
-cost = 12
+    orders.customer_id
 
-A → C → G
-cost = 7
-```
+The foreign key ensures that an order cannot refer to a customer
+that does not exist, unless the relationship is intentionally nullable
+and NULL is used.
+""")
 
-UCS prefers:
+connection.execute("""
+CREATE TABLE orders (
+    order_id INTEGER PRIMARY KEY,
+    customer_id INTEGER NOT NULL,
+    order_date TEXT NOT NULL,
+    status TEXT NOT NULL,
+    total_amount REAL NOT NULL,
+    FOREIGN KEY (customer_id)
+        REFERENCES customers(customer_id)
+)
+""")
 
-```text
-A → C → G
-```
+connection.execute("""
+CREATE TABLE order_items (
+    order_item_id INTEGER PRIMARY KEY,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL CHECK(quantity > 0),
+    unit_price REAL NOT NULL CHECK(unit_price >= 0),
+    FOREIGN KEY (order_id)
+        REFERENCES orders(order_id),
+    FOREIGN KEY (product_id)
+        REFERENCES products(product_id)
+)
+""")
 
-because it has lower total cost.
 
-UCS therefore focuses on:
+# ============================================================
+# 22. INSERT ORDERS
+# ============================================================
 
-```text
-g(n)
-```
+title("21. Creating Related Data")
 
-where `g(n)` is the cost from the initial state to node `n`.
+orders = [
+    (1, 1, "2026-02-01", "PAID", 76200),
+    (2, 2, "2026-02-02", "PAID", 13200),
+    (3, 3, "2026-02-03", "PENDING", 18000),
+]
 
----
+connection.executemany("""
+INSERT INTO orders
+(order_id, customer_id, order_date, status, total_amount)
+VALUES (?, ?, ?, ?, ?)
+""", orders)
 
-# 31. Heuristics
+order_items = [
+    (1, 1, 1, 1, 75000),
+    (2, 1, 2, 1, 1200),
+    (3, 2, 4, 1, 12000),
+    (4, 2, 2, 1, 1200),
+    (5, 3, 4, 1, 12000),
+    (6, 3, 2, 5, 1200),
+]
 
-A **heuristic function** provides an estimate of the remaining cost to a goal.
+connection.executemany("""
+INSERT INTO order_items
+(order_item_id, order_id, product_id, quantity, unit_price)
+VALUES (?, ?, ?, ?, ?)
+""", order_items)
 
-It is normally represented as:
+connection.commit()
 
-```text
-h(n)
-```
 
-For a grid-world problem, Manhattan distance is a common heuristic:
+# ============================================================
+# 23. RELATIONSHIPS
+# ============================================================
 
-```text
-h(n) =
-|row_current - row_goal|
-+
-|column_current - column_goal|
-```
+title("22. Database Relationships")
 
-A heuristic incorporates problem-specific knowledge into search.
+explain("""
+A relationship describes how entities relate to one another.
 
-Without a heuristic, a search algorithm may have to explore a large number of possibilities.
+One-to-one:
 
-With a useful heuristic, the search can focus on promising states.
+    person -> passport
 
----
+One-to-many:
 
-# 32. Admissible Heuristic
+    customer -> orders
 
-A heuristic is **admissible** if it never overestimates the true cheapest remaining cost.
+Many-to-many:
 
-Therefore:
+    students <-> courses
 
-```text
-h(n) <= h*(n)
-```
+Many-to-many relationships require an associative or junction table.
 
-where:
+In this database:
 
-```text
-h(n)  = estimated cost
-h*(n) = actual optimal remaining cost
-```
+    orders
+    order_items
+    products
 
-For example, if the true remaining cost is 10:
+allow one order to contain many products and one product to appear
+in many orders.
 
-```text
-h(n) = 7
-```
+order_items acts as the junction table.
+""")
 
-is admissible.
 
-But:
+# ============================================================
+# 24. JOIN
+# ============================================================
 
-```text
-h(n) = 13
-```
+title("23. INNER JOIN")
 
-is not admissible.
+explain("""
+A JOIN combines rows from multiple tables based on a relationship.
 
-Admissibility is important for the optimality of A* search.
+INNER JOIN returns rows where matching records exist in both sides.
+""")
 
----
+execute_and_show(
+    connection,
+    """
+    SELECT
+        o.order_id,
+        c.name AS customer_name,
+        o.status,
+        o.total_amount
+    FROM orders AS o
+    INNER JOIN customers AS c
+        ON o.customer_id = c.customer_id
+    """
+)
 
-# 33. Consistent Heuristic
 
-A heuristic is **consistent** when it satisfies the triangle inequality:
+# ============================================================
+# 25. LEFT JOIN
+# ============================================================
 
-```text
-h(n) <= c(n,a,n') + h(n')
-```
+title("24. LEFT JOIN")
 
-where:
+explain("""
+LEFT JOIN returns all rows from the left table.
 
-```text
-c(n,a,n')
-```
+If a matching row does not exist in the right table, the right-side
+columns become NULL.
 
-is the cost of moving from `n` to `n'`.
+LEFT JOIN is useful for questions such as:
 
-Consistency is a stronger useful property than simple admissibility and is particularly important in graph-search implementations of A*.
+    Which customers have never placed an order?
 
----
+The absence of a matching record becomes visible as NULL.
+""")
 
-# 34. Greedy Best-First Search
+execute_and_show(
+    connection,
+    """
+    SELECT
+        c.customer_id,
+        c.name,
+        o.order_id
+    FROM customers AS c
+    LEFT JOIN orders AS o
+        ON c.customer_id = o.customer_id
+    """
+)
 
-Greedy best-first search evaluates a node using:
 
-```text
-f(n) = h(n)
-```
+# ============================================================
+# 26. JOIN CARDINALITY
+# ============================================================
 
-It focuses on estimated distance to the goal.
+title("25. Join Cardinality")
 
-The advantage is that it can quickly move toward apparently promising states.
+explain("""
+Join cardinality describes how many rows can match another row.
 
-The disadvantage is that it ignores the cost already incurred.
+One-to-one:
 
-A node can appear very close to the goal while having been reached through an extremely expensive path.
+    1 -> 1
 
-Greedy best-first search is therefore not generally optimal.
+One-to-many:
 
----
+    1 -> many
 
-# 35. A* Search
+Many-to-many:
 
-A* combines path cost and heuristic estimate.
+    many -> many
 
-Its evaluation function is:
+A join can increase the number of result rows.
 
-```text
-f(n) = g(n) + h(n)
-```
+For example, one order with five order items produces five rows when
+orders are joined to order_items.
 
-where:
+This is one of the most important causes of accidental duplication
+in analytical SQL.
+""")
 
-```text
-g(n) = cost from initial state to n
-h(n) = estimated cost from n to goal
-f(n) = estimated total solution cost through n
-```
+execute_and_show(
+    connection,
+    """
+    SELECT
+        o.order_id,
+        p.product_name,
+        oi.quantity
+    FROM orders AS o
+    JOIN order_items AS oi
+        ON o.order_id = oi.order_id
+    JOIN products AS p
+        ON oi.product_id = p.product_id
+    ORDER BY o.order_id
+    """
+)
 
-A* therefore balances:
 
-```text
-Cost already spent
-```
+# ============================================================
+# 27. AGGREGATE FUNCTIONS
+# ============================================================
 
-with:
+title("26. Aggregate Functions")
 
-```text
-Estimated remaining cost
-```
+explain("""
+Aggregate functions operate across multiple rows.
 
-A useful interpretation is:
+Common aggregate functions:
 
-```text
-f(n)
-=
-past cost
-+
-estimated future cost
-```
+    COUNT()
+    SUM()
+    AVG()
+    MIN()
+    MAX()
 
-When the heuristic satisfies the appropriate conditions, A* can provide an optimal solution.
+They are used for reporting and analytical calculations.
+""")
 
----
+execute_and_show(
+    connection,
+    """
+    SELECT
+        COUNT(*) AS product_count,
+        SUM(stock_quantity) AS total_stock,
+        AVG(price) AS average_price,
+        MIN(price) AS minimum_price,
+        MAX(price) AS maximum_price
+    FROM products
+    """
+)
 
-# 36. Goal-Based Agents
 
-A **goal-based agent** explicitly considers goals when choosing actions.
+# ============================================================
+# 28. GROUP BY
+# ============================================================
+
+title("27. GROUP BY")
+
+explain("""
+GROUP BY divides rows into groups and calculates aggregates for each
+group.
 
 For example:
 
-```text
-Current state:
-(1,1)
+    total sales by customer
+    average price by category
+    number of orders by status
+""")
 
-Goal:
-(3,3)
-```
+execute_and_show(
+    connection,
+    """
+    SELECT
+        category,
+        COUNT(*) AS product_count,
+        AVG(price) AS average_price
+    FROM products
+    GROUP BY category
+    """
+)
 
-The agent selects actions that move it toward a goal state.
 
-A goal-based agent is more flexible than a purely reflex-based system because it considers desired future states rather than reacting only to the current percept.
+# ============================================================
+# 29. HAVING
+# ============================================================
 
----
+title("28. HAVING")
 
-# 37. Simple Reflex Agents
+explain("""
+WHERE filters individual rows before grouping.
 
-A **simple reflex agent** selects actions based on the current percept.
+HAVING filters groups after aggregation.
 
-A rule might be:
+Example:
 
-```text
-IF dirty
-THEN clean
-```
+    WHERE price > 1000
 
-Another:
+filters products.
 
-```text
-IF obstacle
-THEN turn
-```
+    HAVING AVG(price) > 10000
 
-Its basic structure is:
+filters categories after their average price has been calculated.
+""")
 
-```text
-Current percept
-      ↓
-Condition
-      ↓
-Action
-```
+execute_and_show(
+    connection,
+    """
+    SELECT
+        category,
+        AVG(price) AS average_price
+    FROM products
+    GROUP BY category
+    HAVING AVG(price) > 5000
+    """
+)
 
-It does not necessarily maintain an explicit model of the world.
 
-Simple reflex agents are appropriate for situations where the current percept contains enough information to make a decision.
+# ============================================================
+# 30. CASE
+# ============================================================
 
----
+title("29. CASE Expressions")
 
-# 38. Model-Based Agents
+explain("""
+CASE creates conditional expressions inside SQL.
 
-A **model-based agent** maintains an internal representation of the environment.
+It is similar to if/elif/else logic in programming.
 
-This becomes useful when the environment is partially observable.
+It can be used for:
 
-For example, a robot may remember:
+    categorization
+    conditional calculations
+    labels
+    reporting logic
+""")
 
-```text
-Previous location
-Known obstacles
-Previous actions
-Battery level
-Previously observed objects
-```
+execute_and_show(
+    connection,
+    """
+    SELECT
+        product_name,
+        price,
+        CASE
+            WHEN price < 2000 THEN 'LOW'
+            WHEN price < 10000 THEN 'MEDIUM'
+            ELSE 'HIGH'
+        END AS price_band
+    FROM products
+    ORDER BY price
+    """
+)
 
-The agent can combine new percepts with its internal state.
 
-Conceptually:
+# ============================================================
+# 31. SUBQUERIES
+# ============================================================
 
-```text
-Current percept
-       +
-Previous internal state
-       ↓
-Updated internal state
-       ↓
-Decision
-```
+title("30. Subqueries")
 
-This allows the agent to reason about aspects of the environment that are not directly visible at the current moment.
+explain("""
+A subquery is a query nested inside another query.
 
----
+Subqueries can be used in:
 
-# 39. Utility-Based Agents
+    WHERE
+    FROM
+    SELECT
+    HAVING
 
-A **utility-based agent** evaluates the desirability of possible outcomes.
+They allow one query to depend on the result of another query.
+""")
 
-A goal-based system asks:
+execute_and_show(
+    connection,
+    """
+    SELECT product_name, price
+    FROM products
+    WHERE price > (
+        SELECT AVG(price)
+        FROM products
+    )
+    """
+)
 
-```text
-Does this state satisfy the goal?
-```
 
-A utility-based system asks:
+# ============================================================
+# 32. EXISTS
+# ============================================================
 
-```text
-How desirable is this state compared with other possible states?
-```
+title("31. EXISTS")
 
-Suppose three routes all reach the destination:
+explain("""
+EXISTS checks whether a subquery returns at least one row.
 
-```text
-Route A = 20 minutes
-Route B = 35 minutes
-Route C = 50 minutes
-```
-
-A goal-based agent can classify all three as successful.
-
-A utility-based agent can rank them:
-
-```text
-A > B > C
-```
-
-Utility becomes especially useful when multiple successful outcomes have different qualities.
-
----
-
-# 40. Utility
-
-A **utility function** represents preferences numerically.
-
-A utility function may combine:
-
-* safety
-* time
-* cost
-* comfort
-* energy
-* reliability
+It is especially useful when asking whether a related record exists.
 
 For example:
 
-```text
-U =
-0.5 × safety
-+
-0.2 × comfort
-+
-0.2 × speed
--
-0.1 × cost
-```
+    Which customers have at least one order?
+""")
 
-The exact formulation depends on the problem.
+execute_and_show(
+    connection,
+    """
+    SELECT
+        c.customer_id,
+        c.name
+    FROM customers AS c
+    WHERE EXISTS (
+        SELECT 1
+        FROM orders AS o
+        WHERE o.customer_id = c.customer_id
+    )
+    """
+)
 
-Higher utility normally represents a more preferred outcome.
 
-Utility values should not automatically be interpreted as literal physical quantities.
+# ============================================================
+# 33. COMMON TABLE EXPRESSIONS
+# ============================================================
 
-If:
+title("32. Common Table Expressions")
 
-```text
-U(A) = 100
-U(B) = 50
-```
+explain("""
+A Common Table Expression, or CTE, is defined using WITH.
 
-the important point is that A is preferred to B under the model. It does not necessarily mean A is physically twice as good.
+CTEs make complicated SQL easier to structure.
 
----
+Instead of placing everything inside one deeply nested query,
+intermediate logical results can be named.
+""")
 
-# 41. Goal vs Utility
+execute_and_show(
+    connection,
+    """
+    WITH customer_sales AS (
+        SELECT
+            customer_id,
+            SUM(total_amount) AS total_sales
+        FROM orders
+        GROUP BY customer_id
+    )
+    SELECT
+        c.name,
+        cs.total_sales
+    FROM customer_sales AS cs
+    JOIN customers AS c
+        ON c.customer_id = cs.customer_id
+    ORDER BY cs.total_sales DESC
+    """
+)
 
-Goals and utilities solve different problems.
 
-A goal provides a desired condition.
+# ============================================================
+# 34. RECURSIVE CTE
+# ============================================================
 
-```text
-Reach Delhi.
-```
+title("33. Recursive CTE")
 
-Utility provides a preference over possible outcomes.
+explain("""
+Recursive CTEs are useful for hierarchical data.
 
-```text
-Route A:
-20 minutes
-high safety
-high utility
+Examples:
 
-Route B:
-40 minutes
-medium safety
-medium utility
-```
+    employee -> manager
+    folder -> subfolder
+    category -> subcategory
+    organization -> department
 
-Goal-based reasoning is useful when success can be clearly defined.
+The recursive query consists of:
 
-Utility-based reasoning becomes more important when:
+    an anchor query
 
-* multiple outcomes satisfy the goal
-* objectives conflict
-* outcomes differ in quality
-* uncertainty exists
-* trade-offs are required
+and
 
----
+    a recursive query
 
-# 42. Multi-Objective Decision Making
+SQLite supports recursive CTEs.
+""")
 
-Real-world intelligent agents often have multiple objectives.
+execute_and_show(
+    connection,
+    """
+    WITH RECURSIVE numbers(n) AS (
+        SELECT 1
 
-For an autonomous vehicle:
+        UNION ALL
 
-```text
-Safety
-Speed
-Comfort
-Energy
-Cost
-Legality
-```
+        SELECT n + 1
+        FROM numbers
+        WHERE n < 5
+    )
+    SELECT n
+    FROM numbers
+    """
+)
 
-These objectives may conflict.
 
-A simple weighted utility model can be:
+# ============================================================
+# 35. SET OPERATIONS
+# ============================================================
 
-```text
-U =
-w1 × safety
-+
-w2 × speed
-+
-w3 × comfort
--
-w4 × cost
-```
+title("34. Set Operations")
 
-The weights determine how strongly each objective influences the decision.
+explain("""
+SQL supports operations that combine result sets.
 
-Changing the weights can change the rational action.
+UNION:
 
----
+    combines results and removes duplicates.
 
-# 43. Decision Making Under Uncertainty
+UNION ALL:
 
-When an action can have several possible outcomes, the agent can use probability and utility together.
+    combines results without removing duplicates.
 
-The expected utility of an action is:
+INTERSECT:
 
-```text
-EU(action)
-=
-Σ P(outcome | action) × U(outcome)
-```
+    returns rows present in both result sets.
 
-Suppose:
+EXCEPT:
 
-```text
-Action A
+    returns rows present in the first result but not the second.
 
-80% probability → utility 100
-20% probability → utility 20
-```
+UNION ALL is generally cheaper than UNION because duplicate removal
+requires additional work.
+""")
 
-Then:
+execute_and_show(
+    connection,
+    """
+    SELECT city
+    FROM customers
+    WHERE city IN ('Lucknow', 'Delhi')
 
-```text
-EU(A)
-=
-0.8 × 100
-+
-0.2 × 20
+    UNION
 
-=
-80 + 4
+    SELECT city
+    FROM customers
+    WHERE city IN ('Delhi', 'Mumbai')
+    """
+)
 
-=
-84
-```
 
-Another action may have:
+# ============================================================
+# 36. VIEWS
+# ============================================================
 
-```text
-EU(B) = 90
-```
+title("35. Views")
 
-A rational utility-maximizing agent would prefer B under this model.
+explain("""
+A view is a stored SQL query that behaves like a virtual table.
 
-The decision rule can be written as:
+Views can:
 
-```text
-a* = argmax EU(a)
-```
+    simplify repeated queries
+    provide abstraction
+    restrict exposed columns
+    centralize reporting logic
 
-where `a*` is the selected action.
+A normal view does not necessarily store the result itself.
+""")
 
----
+connection.execute("""
+CREATE VIEW customer_order_report AS
+SELECT
+    c.customer_id,
+    c.name,
+    o.order_id,
+    o.order_date,
+    o.status,
+    o.total_amount
+FROM customers AS c
+JOIN orders AS o
+    ON c.customer_id = o.customer_id
+""")
 
-# 44. Belief State
+execute_and_show(
+    connection,
+    "SELECT * FROM customer_order_report"
+)
 
-In a partially observable environment, the agent may not know the exact current state.
 
-It can instead maintain a **belief state**.
+# ============================================================
+# 37. NORMALIZATION
+# ============================================================
+
+title("36. Database Normalization")
+
+explain("""
+Normalization is a design process used to reduce unnecessary
+duplication and dependency problems.
+
+Important normal forms include:
+
+    First Normal Form
+    Second Normal Form
+    Third Normal Form
+    Boyce-Codd Normal Form
+
+First Normal Form generally requires atomic values and no repeating
+groups.
+
+Second Normal Form requires 1NF and removal of partial dependency
+on part of a composite key.
+
+Third Normal Form requires 2NF and removal of inappropriate
+transitive dependencies.
+
+Normalization is primarily about logical data organization.
+It is not simply a rule that says every table must be as small as
+possible.
+""")
+
+
+# ============================================================
+# 38. DATABASE ANOMALIES
+# ============================================================
+
+title("37. Database Anomalies")
+
+explain("""
+Poorly designed tables can create anomalies.
+
+INSERT anomaly:
+
+    It becomes difficult to insert one fact without another unrelated
+    fact.
+
+UPDATE anomaly:
+
+    The same fact appears in many rows and must be changed repeatedly.
+
+DELETE anomaly:
+
+    Deleting one fact accidentally removes another useful fact.
+
+Normalization helps reduce these problems.
+""")
+
+
+# ============================================================
+# 39. COMPOSITE KEYS
+# ============================================================
+
+title("38. Composite Keys")
+
+explain("""
+A composite key consists of multiple columns.
+
+For example, a student can enroll in a course.
+
+student_id + course_id
+
+can uniquely identify an enrollment.
+
+The combination is unique even if each individual value appears many
+times.
+""")
+
+connection.execute("""
+CREATE TABLE course_enrollments (
+    student_id INTEGER NOT NULL,
+    course_id INTEGER NOT NULL,
+    enrolled_at TEXT NOT NULL,
+    PRIMARY KEY (student_id, course_id)
+)
+""")
+
+
+# ============================================================
+# 40. NATURAL VS SURROGATE KEYS
+# ============================================================
+
+title("39. Natural and Surrogate Keys")
+
+explain("""
+A natural key comes from real-world business data.
+
+Examples:
+
+    email
+    ISBN
+    government-issued identifier
+    product SKU
+
+A surrogate key is generated specifically for database identity.
+
+Examples:
+
+    customer_id
+    order_id
+
+Surrogate keys are often convenient because business attributes
+can change independently of internal identity.
+
+A natural key may still need a UNIQUE constraint even when a
+surrogate primary key is used.
+""")
+
+
+# ============================================================
+# 41. INDEXES
+# ============================================================
+
+title("40. Indexes")
+
+explain("""
+An index is a data structure that helps the database locate rows
+more efficiently.
+
+Without a useful index, the database may need to scan many or all
+rows.
+
+An index can improve reads but introduces costs:
+
+    additional storage
+    slower writes
+    maintenance overhead
+
+Indexes should support actual access patterns.
+""")
+
+connection.execute("""
+CREATE INDEX idx_products_category
+ON products(category)
+""")
+
+connection.execute("""
+CREATE INDEX idx_orders_customer
+ON orders(customer_id)
+""")
+
+
+# ============================================================
+# 42. INDEXED SEARCH
+# ============================================================
+
+title("41. Index Usage")
+
+execute_and_show(
+    connection,
+    """
+    SELECT *
+    FROM products
+    WHERE category = ?
+    """,
+    ("Electronics",)
+)
+
+
+# ============================================================
+# 43. EXPLAIN QUERY PLAN
+# ============================================================
+
+title("42. Query Execution Plans")
+
+explain("""
+A database optimizer decides how to execute SQL.
+
+EXPLAIN QUERY PLAN provides information about the chosen strategy
+in SQLite.
+
+Possible operations include:
+
+    table scan
+    index search
+    temporary sorting
+    nested-loop joins
+
+The exact syntax and output differ across database engines.
+""")
+
+execute_and_show(
+    connection,
+    """
+    EXPLAIN QUERY PLAN
+    SELECT *
+    FROM products
+    WHERE category = 'Electronics'
+    """
+)
+
+
+# ============================================================
+# 44. SELECTIVITY
+# ============================================================
+
+title("43. Selectivity")
+
+explain("""
+Selectivity describes how effectively a condition narrows the result.
+
+A highly selective condition returns relatively few rows.
 
 For example:
 
-```text
-State A → 0.60
-State B → 0.30
-State C → 0.10
-```
+    customer_id = 12345
 
-The agent does not know exactly which state is true.
+is often highly selective.
 
-Instead, it maintains probabilities representing its current beliefs.
+A condition such as:
 
-This is useful in:
+    gender = 'M'
 
-* diagnosis
-* robotics
-* navigation
-* games with hidden information
-* uncertain environments
+may be less selective in a large dataset.
 
----
+Index usefulness depends partly on selectivity and the database
+optimizer's cost model.
+""")
 
-# 45. Internal State
 
-An internal state stores information that is not necessarily present in the current percept.
+# ============================================================
+# 45. CARDINALITY
+# ============================================================
 
-Suppose a robot currently sees:
+title("44. Cardinality")
 
-```text
-Door
-```
+explain("""
+Cardinality can refer to the number of distinct values in a column
+or to the relationship between entities.
 
-Its internal state may contain:
+Examples:
 
-```text
-The door was previously open.
-The robot is carrying a package.
-The destination is Room 4.
-The battery is low.
-```
+    primary key -> high uniqueness
+    status      -> low number of distinct values
 
-This information can affect its decision.
+In relationship modeling:
 
-Internal state is particularly important when current observations do not provide a complete description of the environment.
+    one-to-one
+    one-to-many
+    many-to-many
 
----
+are cardinality patterns.
+""")
 
-# 46. Rationality and Bounded Rationality
 
-A theoretically perfect agent could attempt to compute the optimal action with unlimited resources.
+# ============================================================
+# 46. COVERING INDEX
+# ============================================================
 
-Real systems have limitations:
+title("45. Covering Index")
 
-* limited time
-* limited memory
-* limited processing power
-* incomplete information
-* imperfect models
+explain("""
+A covering index contains enough information for a query to be
+answered directly from the index without retrieving the table row.
 
-This produces **bounded rationality**.
+For example, if a query needs:
 
-An agent may therefore select the best action it can compute within its resource limitations.
+    category
+    price
 
-Chess provides a clear example.
+an index containing both may allow the database to satisfy the query
+more efficiently.
 
-A chess engine cannot normally evaluate every possible future game sequence.
+Whether this happens depends on the database engine and execution plan.
+""")
 
-Instead, it uses:
 
-* search
-* heuristics
-* evaluation functions
-* pruning
-* learned knowledge
-* time limits
+# ============================================================
+# 47. TRANSACTIONS
+# ============================================================
 
-The resulting behavior can still be highly rational.
+title("46. Transactions")
 
----
+explain("""
+A transaction groups multiple database operations into one logical
+unit.
 
-# 47. Autonomy
+Consider transferring money:
 
-An agent is autonomous to the extent that its behavior is determined by its own experience rather than being completely controlled by its designer.
+    subtract from account A
+    add to account B
 
-A completely fixed rule system has limited autonomy.
+If the first operation succeeds and the second fails, the system
+must not leave the database in an invalid state.
 
-A learning agent can modify its behavior using experience.
+A transaction provides atomicity.
+""")
 
-Autonomy does not mean that the agent receives no external information.
+connection.execute("""
+CREATE TABLE accounts (
+    account_id INTEGER PRIMARY KEY,
+    owner TEXT NOT NULL,
+    balance REAL NOT NULL CHECK(balance >= 0)
+)
+""")
 
-An autonomous agent can still use:
+connection.executemany(
+    "INSERT INTO accounts (account_id, owner, balance) VALUES (?, ?, ?)",
+    [
+        (1, "Alice", 10000),
+        (2, "Bob", 5000),
+    ]
+)
 
-* sensors
-* instructions
-* models
-* policies
-* external information
+connection.commit()
 
-The important distinction is how much of its behavior is generated from accumulated experience and internal decision processes.
 
----
+# ============================================================
+# 48. COMMIT AND ROLLBACK
+# ============================================================
 
-# 48. Learning Agents
+title("47. COMMIT and ROLLBACK")
 
-A **learning agent** improves its behavior through experience.
+explain("""
+COMMIT permanently applies a successful transaction.
 
-A classical learning-agent architecture can contain:
+ROLLBACK reverses changes made since the transaction began.
 
-### Performance element
+The exact durability behavior depends on the database engine,
+storage configuration and transaction settings.
+""")
 
-Chooses actions.
+try:
+    connection.execute("BEGIN")
 
-### Learning element
+    connection.execute("""
+        UPDATE accounts
+        SET balance = balance - 1000
+        WHERE account_id = 1
+    """)
 
-Modifies the performance element.
+    connection.execute("""
+        UPDATE accounts
+        SET balance = balance + 1000
+        WHERE account_id = 2
+    """)
 
-### Critic
+    connection.commit()
 
-Evaluates behavior.
+except Exception:
+    connection.rollback()
 
-### Problem generator
+execute_and_show(
+    connection,
+    "SELECT * FROM accounts"
+)
 
-Encourages exploration and useful experiences.
 
-The basic interaction is:
+# ============================================================
+# 49. ACID
+# ============================================================
 
-```text
-Environment
-     ↓
-Experience
-     ↓
-Critic
-     ↓
-Learning element
-     ↓
-Performance element
-     ↓
-Action
-     ↓
-Environment
-```
+title("48. ACID")
 
-Learning allows an agent to adapt rather than relying entirely on predefined behavior.
+explain("""
+ACID describes four important transaction properties.
 
----
+Atomicity:
 
-# 49. Exploration and Exploitation
+    The transaction behaves as a unit.
 
-A learning agent faces a fundamental trade-off.
+Consistency:
 
-### Exploration
+    Valid database rules are maintained before and after the
+    transaction.
 
-Try actions to gain information.
+Isolation:
 
-### Exploitation
+    Concurrent transactions are controlled so that intermediate
+    states do not cause unacceptable interference.
 
-Use actions that are already believed to be good.
+Durability:
 
-If the agent only exploits:
+    Once committed, data is intended to survive failures according
+    to the database's durability guarantees.
 
-```text
-It may never discover better actions.
-```
+ACID is not one specific implementation. Different databases provide
+these guarantees using different storage and concurrency mechanisms.
+""")
 
-If the agent explores excessively:
 
-```text
-It may sacrifice performance unnecessarily.
-```
+# ============================================================
+# 50. SAVEPOINT
+# ============================================================
 
-This trade-off is important in:
+title("49. SAVEPOINT")
 
-* reinforcement learning
-* recommendation systems
-* online optimization
-* adaptive systems
-* autonomous decision making
+explain("""
+A SAVEPOINT creates a point inside a transaction to which the
+transaction can partially roll back.
 
-A common mechanism is epsilon-greedy selection.
+This is useful when a large transaction contains multiple logical
+steps.
+""")
 
-With probability `ε`, the agent explores.
+connection.execute("BEGIN")
 
-Otherwise, it chooses the currently highest-valued action.
+connection.execute("""
+UPDATE accounts
+SET balance = balance - 500
+WHERE account_id = 1
+""")
 
----
+connection.execute("SAVEPOINT after_withdrawal")
 
-# 50. Policy
+connection.execute("""
+UPDATE accounts
+SET balance = balance + 500
+WHERE account_id = 2
+""")
 
-A **policy** specifies what action should be taken in a particular state or observation.
+connection.execute("ROLLBACK TO after_withdrawal")
 
-It can be represented as:
+connection.execute("RELEASE after_withdrawal")
 
-```text
-π(s) = action
-```
+connection.rollback()
+
+
+# ============================================================
+# 51. ISOLATION AND CONCURRENCY
+# ============================================================
+
+title("50. Isolation and Concurrency")
+
+explain("""
+Multiple users or processes may access a database at the same time.
+
+Concurrency creates problems such as:
+
+    dirty reads
+    non-repeatable reads
+    phantom reads
+    lost updates
+
+Database systems use locking, MVCC, snapshots and other techniques
+to control concurrent access.
+
+Isolation levels commonly discussed include:
+
+    Read Uncommitted
+    Read Committed
+    Repeatable Read
+    Serializable
+
+The exact behavior differs by database engine.
+""")
+
+
+# ============================================================
+# 52. LOCKING
+# ============================================================
+
+title("51. Locks")
+
+explain("""
+Locks coordinate concurrent access to shared database resources.
+
+Conceptually, systems may use:
+
+    shared/read locks
+    exclusive/write locks
+
+Lock granularity can vary:
+
+    row
+    page
+    table
+    database
+
+Modern database engines may also use multi-version concurrency
+control rather than relying solely on blocking locks.
+""")
+
+
+# ============================================================
+# 53. DEADLOCKS
+# ============================================================
+
+title("52. Deadlocks")
+
+explain("""
+A deadlock occurs when transactions wait for one another indefinitely.
+
+Example:
+
+Transaction A:
+
+    locks resource X
+    waits for resource Y
+
+Transaction B:
+
+    locks resource Y
+    waits for resource X
+
+The database may detect the deadlock and abort one transaction.
+
+Applications must be prepared to retry transactions where appropriate.
+""")
+
+
+# ============================================================
+# 54. REFERENTIAL ACTIONS
+# ============================================================
+
+title("53. Referential Actions")
+
+explain("""
+Foreign keys can specify what should happen when a referenced row
+changes or is deleted.
+
+Common actions include:
+
+    CASCADE
+    SET NULL
+    RESTRICT
+    NO ACTION
 
 For example:
 
-```text
-π(A) = RIGHT
-π(B) = DOWN
-π(C) = LEFT
-```
+    ON DELETE CASCADE
 
-An individual action is one decision.
+means deleting a parent row may automatically delete dependent rows.
 
-A policy is a rule that determines decisions across states.
+Cascades should be designed carefully because one delete operation
+can affect many records.
+""")
 
-The distinction is important in sequential decision making and reinforcement learning.
 
----
+# ============================================================
+# 55. UPSERT
+# ============================================================
 
-# 51. Search vs Decision Making
+title("54. UPSERT")
 
-Classical search asks:
+explain("""
+UPSERT means:
 
-```text
-Which sequence of actions leads to a goal?
-```
+    insert if the record does not exist
+    otherwise update an existing record
 
-Decision theory asks:
+SQLite supports INSERT ... ON CONFLICT.
 
-```text
-Which action or strategy is most desirable given uncertainty
-and preferences?
-```
+UPSERT is useful for synchronization and idempotent operations.
+""")
 
-These ideas can be combined.
+connection.execute("""
+CREATE TABLE product_inventory (
+    product_id INTEGER PRIMARY KEY,
+    quantity INTEGER NOT NULL
+)
+""")
 
-A navigation system may search for possible routes while considering:
+connection.execute("""
+INSERT INTO product_inventory(product_id, quantity)
+VALUES (?, ?)
+ON CONFLICT(product_id)
+DO UPDATE SET quantity = excluded.quantity
+""", (1, 25))
 
-```text
-distance
-traffic
-time
-fuel
-safety
-uncertainty
-```
+connection.commit()
 
-The problem is therefore not simply:
+execute_and_show(
+    connection,
+    "SELECT * FROM product_inventory"
+)
 
-```text
-Find any path.
-```
 
-It becomes:
+# ============================================================
+# 56. WINDOW FUNCTIONS
+# ============================================================
 
-```text
-Find or select a path that provides the best expected result
-according to the agent's objectives.
-```
+title("55. Window Functions")
 
----
+explain("""
+A window function performs a calculation across related rows while
+keeping the individual rows visible.
 
-# 52. Path and Plan
+This differs from GROUP BY.
 
-A **path** is a sequence of states through a state space.
+GROUP BY reduces rows into groups.
 
-A **plan** is generally a sequence of actions intended to accomplish a goal.
+A window function calculates over a group of rows without necessarily
+collapsing them.
+
+Common window functions include:
+
+    ROW_NUMBER()
+    RANK()
+    DENSE_RANK()
+    LAG()
+    LEAD()
+    SUM() OVER(...)
+    AVG() OVER(...)
+""")
+
+execute_and_show(
+    connection,
+    """
+    SELECT
+        product_name,
+        category,
+        price,
+        RANK() OVER (
+            PARTITION BY category
+            ORDER BY price DESC
+        ) AS category_rank
+    FROM products
+    ORDER BY category, category_rank
+    """
+)
+
+
+# ============================================================
+# 57. LAG AND LEAD
+# ============================================================
+
+title("56. LAG and LEAD")
+
+explain("""
+LAG accesses a previous row.
+
+LEAD accesses a following row.
+
+They are useful for:
+
+    time-series analysis
+    comparing periods
+    calculating changes
+    detecting transitions
+""")
+
+execute_and_show(
+    connection,
+    """
+    SELECT
+        order_id,
+        order_date,
+        total_amount,
+        LAG(total_amount) OVER (
+            ORDER BY order_date
+        ) AS previous_order_amount
+    FROM orders
+    ORDER BY order_date
+    """
+)
+
+
+# ============================================================
+# 58. TRIGGERS
+# ============================================================
+
+title("57. Triggers")
+
+explain("""
+A trigger automatically executes when a specified database event
+occurs.
+
+Typical events:
+
+    INSERT
+    UPDATE
+    DELETE
+
+Triggers can be used for:
+
+    auditing
+    maintaining derived data
+    enforcing specialized rules
+
+Triggers should be used carefully because they create behavior that
+may not be visible from the application code invoking the statement.
+""")
+
+connection.execute("""
+CREATE TABLE order_audit (
+    audit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    action TEXT NOT NULL,
+    created_at TEXT NOT NULL
+)
+""")
+
+connection.execute("""
+CREATE TRIGGER audit_order_insert
+AFTER INSERT ON orders
+BEGIN
+    INSERT INTO order_audit
+    (order_id, action, created_at)
+    VALUES
+    (NEW.order_id, 'INSERT', datetime('now'));
+END
+""")
+
+
+# ============================================================
+# 59. TRIGGER DEMONSTRATION
+# ============================================================
+
+title("58. Trigger Demonstration")
+
+connection.execute("""
+INSERT INTO orders
+(order_id, customer_id, order_date, status, total_amount)
+VALUES
+(4, 1, '2026-02-05', 'PAID', 2500)
+""")
+
+connection.commit()
+
+execute_and_show(
+    connection,
+    "SELECT * FROM order_audit"
+)
+
+
+# ============================================================
+# 60. AUDITING
+# ============================================================
+
+title("59. Auditing")
+
+explain("""
+Auditing records important changes to data.
+
+An audit record may contain:
+
+    who changed the record
+    what changed
+    when it changed
+    previous value
+    new value
+    source or application
+
+Audit tables can be implemented using triggers, application logic,
+database features or specialized auditing systems.
+""")
+
+
+# ============================================================
+# 61. SQL COMMAND CATEGORIES
+# ============================================================
+
+title("60. SQL Command Categories")
+
+explain("""
+SQL statements are often grouped into categories.
+
+DDL - Data Definition Language
+
+    CREATE
+    ALTER
+    DROP
+    TRUNCATE
+
+DML - Data Manipulation Language
+
+    INSERT
+    UPDATE
+    DELETE
+
+DQL - Data Query Language
+
+    SELECT
+
+DCL - Data Control Language
+
+    GRANT
+    REVOKE
+
+TCL - Transaction Control Language
+
+    COMMIT
+    ROLLBACK
+    SAVEPOINT
+
+Exact classifications vary somewhat between educational sources.
+""")
+
+
+# ============================================================
+# 62. SCHEMA
+# ============================================================
+
+title("61. Database Schema")
+
+explain("""
+A schema describes the logical structure of database objects.
+
+It can include:
+
+    tables
+    columns
+    data types
+    constraints
+    indexes
+    views
+    relationships
+    functions
+    triggers
+
+In PostgreSQL, schemas are also explicit namespaces within a database.
+
+SQLite has a different schema model.
+""")
+
+
+# ============================================================
+# 63. ENTITY RELATIONSHIP MODEL
+# ============================================================
+
+title("62. Entity Relationship Modeling")
+
+explain("""
+Entity Relationship modeling is used to design a database before
+implementation.
+
+An entity represents something important to the business.
+
+Examples:
+
+    Customer
+    Product
+    Order
+    Employee
+
+Attributes describe entities.
+
+Relationships describe how entities interact.
+
+An ER model helps translate business requirements into database
+structures.
+""")
+
+
+# ============================================================
+# 64. ONE-TO-ONE
+# ============================================================
+
+title("63. One-to-One Relationship")
+
+explain("""
+A one-to-one relationship means each record in one table corresponds
+to at most one record in another table.
+
+Example:
+
+    employee
+    employee_profile
+
+One implementation is to use the parent primary key as the child
+primary key and foreign key.
+""")
+
+
+# ============================================================
+# 65. ONE-TO-MANY
+# ============================================================
+
+title("64. One-to-Many Relationship")
+
+explain("""
+A one-to-many relationship means one parent can have many children.
+
+Example:
+
+    customer -> orders
+
+The foreign key normally exists on the many side:
+
+    orders.customer_id
+""")
+
+
+# ============================================================
+# 66. MANY-TO-MANY
+# ============================================================
+
+title("65. Many-to-Many Relationship")
+
+explain("""
+A many-to-many relationship cannot normally be represented by placing
+one foreign key in either table.
+
+Instead, a junction table is introduced.
+
+Example:
+
+    students
+    courses
+    enrollments
+
+The enrollments table can contain:
+
+    student_id
+    course_id
+    enrolled_at
+""")
+
+
+# ============================================================
+# 67. OLTP
+# ============================================================
+
+title("66. OLTP")
+
+explain("""
+OLTP stands for Online Transaction Processing.
+
+OLTP systems handle operational transactions such as:
+
+    placing orders
+    updating inventory
+    processing payments
+    registering users
+    booking tickets
+
+OLTP workloads usually involve:
+
+    many concurrent users
+    relatively small transactions
+    frequent INSERT/UPDATE operations
+    strong consistency requirements
+    low-latency queries
+""")
+
+
+# ============================================================
+# 68. OLAP
+# ============================================================
+
+title("67. OLAP")
+
+explain("""
+OLAP stands for Online Analytical Processing.
+
+OLAP systems support analysis such as:
+
+    revenue by region
+    sales trends
+    customer segmentation
+    monthly performance
+    business intelligence
+
+OLAP workloads often involve:
+
+    large scans
+    aggregations
+    historical datasets
+    complex analytical queries
+""")
+
+
+# ============================================================
+# 69. FACT AND DIMENSION
+# ============================================================
+
+title("68. Fact and Dimension Tables")
+
+explain("""
+A common analytical design is the star schema.
+
+Fact tables contain measurable business events.
+
+Examples:
+
+    sales
+    transactions
+    clicks
+    shipments
+
+Dimension tables provide descriptive context.
+
+Examples:
+
+    customer
+    product
+    date
+    region
+
+A sales fact may contain:
+
+    date_id
+    customer_id
+    product_id
+    quantity
+    revenue
+""")
+
+
+# ============================================================
+# 70. ETL AND ELT
+# ============================================================
+
+title("69. ETL and ELT")
+
+explain("""
+ETL means:
+
+    Extract
+    Transform
+    Load
+
+Data is extracted from sources, transformed and then loaded into
+the destination.
+
+ELT means:
+
+    Extract
+    Load
+    Transform
+
+Data is loaded first and transformations occur inside the target
+data platform.
+
+The distinction matters because modern analytical systems often
+have substantial computational capacity for transformations.
+""")
+
+
+# ============================================================
+# 71. DENORMALIZATION
+# ============================================================
+
+title("70. Denormalization")
+
+explain("""
+Denormalization intentionally introduces some redundancy to improve
+specific read patterns.
+
+Possible reasons:
+
+    reduce expensive joins
+    simplify reporting
+    improve read performance
+    support specialized workloads
+
+Denormalization creates additional consistency responsibilities.
+
+It should be based on actual workload requirements rather than
+being used simply because joins appear inconvenient.
+""")
+
+
+# ============================================================
+# 72. DERIVED DATA
+# ============================================================
+
+title("71. Derived Data")
+
+explain("""
+Derived data is calculated from other information.
+
+Examples:
+
+    order total
+    account balance
+    customer lifetime value
+    inventory availability
+
+The key design question is whether to calculate the value when it
+is requested or store it.
+
+Stored derived data can improve read performance but introduces the
+risk of stale or inconsistent values.
+""")
+
+
+# ============================================================
+# 73. HISTORICAL DATA
+# ============================================================
+
+title("72. Historical Data")
+
+explain("""
+Historical modeling becomes important when the system must preserve
+past states.
+
+Example:
+
+A customer's address changes.
+
+If the system simply updates the current address, the old address
+is lost.
+
+Historical approaches can include:
+
+    audit tables
+    effective_from / effective_to
+    version numbers
+    temporal modeling
+    event records
+
+The correct approach depends on the business requirement.
+""")
+
+
+# ============================================================
+# 74. SOFT DELETE
+# ============================================================
+
+title("73. Soft Delete")
+
+explain("""
+A soft delete marks a record as inactive rather than physically
+deleting it.
+
+Common columns include:
+
+    deleted_at
+    is_deleted
+
+Advantages:
+
+    recoverability
+    historical visibility
+    easier auditing
+
+Disadvantages:
+
+    every query may need to filter deleted rows
+    indexes may become more complex
+    uniqueness rules can become complicated
+    storage is retained
+
+Soft deletion is a data lifecycle decision, not merely a coding trick.
+""")
+
+
+# ============================================================
+# 75. SQL INJECTION
+# ============================================================
+
+title("74. SQL Injection")
+
+explain("""
+SQL injection occurs when untrusted input is interpreted as SQL
+syntax.
+
+The core defense is parameterized queries.
+
+Bad pattern:
+
+    SQL string + user input
+
+Good pattern:
+
+    SQL statement with placeholders
+    values supplied separately
+
+The database driver then handles the parameter as data rather than
+SQL code.
+""")
+
+
+# ============================================================
+# 76. SECURITY
+# ============================================================
+
+title("75. Database Security")
+
+explain("""
+Database security includes:
+
+    authentication
+    authorization
+    encryption
+    auditing
+    least privilege
+    network security
+    credential management
+    backup protection
+    monitoring
+
+Least privilege means users and applications should receive only
+the permissions required for their responsibilities.
+
+A web application normally should not have unrestricted administrative
+permissions on the production database.
+""")
+
+
+# ============================================================
+# 77. ORM
+# ============================================================
+
+title("76. Object Relational Mapping")
+
+explain("""
+ORM stands for Object Relational Mapping.
+
+An ORM maps application objects to database structures.
+
+Examples of ORM concepts include:
+
+    model
+    entity
+    relationship
+    repository
+    query builder
+    migration
+
+ORMs can reduce repetitive SQL but do not eliminate the need to
+understand SQL.
+
+Complex queries, performance problems and transaction behavior still
+require database knowledge.
+""")
+
+
+# ============================================================
+# 78. N+1 QUERY
+# ============================================================
+
+title("77. N+1 Query Problem")
+
+explain("""
+The N+1 problem occurs when an application executes:
+
+    1 query to retrieve N parent records
+
+and then:
+
+    1 additional query for each parent
+
+This produces:
+
+    1 + N queries
+
+For large N, this can become expensive.
+
+A JOIN, batch query, prefetch strategy or carefully designed query
+can often reduce the number of database round trips.
+""")
+
+
+# ============================================================
+# 79. CONNECTION POOLING
+# ============================================================
+
+title("78. Connection Pooling")
+
+explain("""
+Creating database connections has overhead.
+
+A connection pool maintains a collection of reusable connections.
+
+An application:
+
+    acquires a connection
+    performs database work
+    releases the connection
+
+The connection can then be reused.
+
+Connection pooling is especially important in server applications
+with many requests.
+""")
+
+
+# ============================================================
+# 80. DATABASE MIGRATIONS
+# ============================================================
+
+title("79. Database Migrations")
+
+explain("""
+A migration is a controlled change to database structure or sometimes
+data.
+
+Examples:
+
+    add a column
+    create an index
+    create a table
+    change a constraint
+
+Migrations allow database schema changes to be versioned and applied
+consistently across environments.
+
+A production migration must consider:
+
+    existing data
+    application compatibility
+    execution time
+    locking
+    rollback strategy
+    deployment order
+""")
+
+
+# ============================================================
+# 81. BACKUP AND RECOVERY
+# ============================================================
+
+title("80. Backup and Recovery")
+
+explain("""
+A backup is a copy of database data that can be used for recovery.
+
+Important concepts include:
+
+    full backup
+    incremental backup
+    differential backup
+    point-in-time recovery
+    recovery point objective
+    recovery time objective
+
+RPO answers:
+
+    How much data loss can the organization tolerate?
+
+RTO answers:
+
+    How long can the service remain unavailable?
+
+A backup strategy is incomplete unless restoration has been tested.
+""")
+
+
+# ============================================================
+# 82. WAL
+# ============================================================
+
+title("81. Write-Ahead Logging")
+
+explain("""
+Write-Ahead Logging, commonly called WAL, is a technique where
+changes are recorded in a log before the modified data pages are
+considered durable.
+
+The log can help with:
+
+    crash recovery
+    durability
+    concurrency
+    replication
+
+PostgreSQL and many other databases use WAL-style mechanisms.
+
+SQLite also supports WAL mode.
+""")
+
+connection.execute("PRAGMA journal_mode = WAL")
+
+
+# ============================================================
+# 83. REPLICATION
+# ============================================================
+
+title("82. Replication")
+
+explain("""
+Replication means maintaining copies of database data on multiple
+database instances.
+
+Common reasons include:
+
+    high availability
+    read scaling
+    disaster recovery
+    geographic distribution
+
+Replication can be:
+
+    synchronous
+    asynchronous
+
+Synchronous replication generally prioritizes stronger confirmation
+of durability across replicas but can increase latency.
+
+Asynchronous replication can reduce write latency but creates a
+window where replicas may lag behind the primary.
+""")
+
+
+# ============================================================
+# 84. PARTITIONING
+# ============================================================
+
+title("83. Partitioning")
+
+explain("""
+Partitioning divides a large logical table into smaller physical
+partitions.
+
+Common strategies:
+
+    range partitioning
+    list partitioning
+    hash partitioning
+
+A common example is partitioning event data by month.
+
+Partitioning can help with:
+
+    data management
+    query pruning
+    maintenance
+    archival
+
+Partitioning behavior and syntax differ substantially among database
+systems.
+""")
+
+
+# ============================================================
+# 85. SHARDING
+# ============================================================
+
+title("84. Sharding")
+
+explain("""
+Sharding distributes data across multiple database nodes.
 
 For example:
 
-```text
-Initial:
-Home
+    users 1-1,000,000 -> shard A
+    users 1,000,001-2,000,000 -> shard B
 
-Goal:
-Airport
+A shard key determines where data is stored.
 
-Plan:
+Good shard keys distribute workload evenly.
 
-1. walk to station
-2. board train
-3. travel
-4. exit train
-5. take taxi
-6. reach airport
-```
+Poor shard keys can create hotspots.
 
-In a deterministic environment with a known model, the result of a plan may be predictable.
+Sharding introduces complexity around:
 
-In a stochastic environment, the same plan may lead to different possible outcomes.
+    routing
+    cross-shard queries
+    transactions
+    rebalancing
+    consistency
+    operational management
+""")
 
----
 
-# 53. Cumulative Utility
+# ============================================================
+# 86. CAP THEOREM
+# ============================================================
 
-In sequential environments, an agent may care about utility accumulated across multiple steps.
+title("85. CAP Theorem")
 
-A simple cumulative model is:
+explain("""
+CAP theorem concerns distributed systems.
 
-```text
-U_total = R1 + R2 + R3 + ... + Rn
-```
+It describes a trade-off involving:
 
-A discounted model is:
+    Consistency
+    Availability
+    Partition tolerance
 
-```text
-U_total =
-R1
-+ γR2
-+ γ²R3
-+ ...
-```
+During a network partition, a distributed system cannot simultaneously
+guarantee both unrestricted availability and strong consistency.
 
-where:
+Partition tolerance matters because network failures can occur.
 
-```text
-0 ≤ γ ≤ 1
-```
+CAP should not be interpreted as a simple permanent choice of
+"two out of three" in normal operation. The important situation is
+what the system does when a partition occurs.
+""")
 
-The parameter `γ` is a discount factor.
 
-When:
+# ============================================================
+# 87. NOSQL
+# ============================================================
 
-```text
-γ = 1
-```
+title("86. Relational and NoSQL Databases")
 
-future rewards are not discounted.
+explain("""
+Relational databases organize data around tables, relationships,
+constraints and SQL.
 
-When `γ` is smaller, future rewards have less influence compared with immediate rewards.
+NoSQL is a broad category containing different models such as:
 
-This becomes important when actions have long-term consequences.
+    document databases
+    key-value stores
+    wide-column databases
+    graph databases
 
----
+The correct choice depends on:
 
-# 54. Conflicting Goals
+    access patterns
+    consistency requirements
+    data relationships
+    scale
+    operational constraints
+    transaction requirements
 
-An agent may have goals that conflict.
+NoSQL does not simply mean "faster database."
+""")
+
+
+# ============================================================
+# 88. JSON
+# ============================================================
+
+title("87. JSON and Semi-Structured Data")
+
+explain("""
+Modern relational databases often support JSON or other semi-structured
+data.
+
+JSON can be useful when attributes vary between records or when
+external payloads need to be stored.
+
+It should not automatically replace normalized columns.
+
+Frequently queried, constrained or relationally important fields
+are often better represented as proper columns.
+""")
+
+
+# ============================================================
+# 89. JSON DEMONSTRATION
+# ============================================================
+
+title("88. JSON Demonstration")
+
+connection.execute("""
+CREATE TABLE user_preferences (
+    user_id INTEGER PRIMARY KEY,
+    preferences TEXT
+)
+""")
+
+connection.execute("""
+INSERT INTO user_preferences
+(user_id, preferences)
+VALUES
+(1, '{"theme":"dark","language":"en","notifications":true}')
+""")
+
+execute_and_show(
+    connection,
+    """
+    SELECT
+        json_extract(preferences, '$.theme') AS theme,
+        json_extract(preferences, '$.language') AS language
+    FROM user_preferences
+    """
+)
+
+
+# ============================================================
+# 90. DATABASE THINKING
+# ============================================================
+
+title("89. Database Thinking")
+
+explain("""
+Database thinking requires understanding the difference between:
+
+    data
+    identity
+    relationships
+    constraints
+    operations
+    transactions
+    access patterns
+    performance
+    reliability
+
+A table should not be designed only around how data looks.
+
+It should be designed around:
+
+    what the data means
+    what must remain true
+    how records relate
+    how the application reads data
+    how the application writes data
+    how data changes over time
+""")
+
+
+# ============================================================
+# 91. DATA INTEGRITY
+# ============================================================
+
+title("90. Data Integrity")
+
+explain("""
+Data integrity means that stored information remains valid and
+consistent with the rules of the system.
+
+Important categories include:
+
+Entity integrity:
+
+    rows have valid identity.
+
+Referential integrity:
+
+    relationships point to valid records.
+
+Domain integrity:
+
+    values satisfy their allowed domain or constraints.
+
+Business integrity:
+
+    values satisfy organization-specific rules.
+""")
+
+
+# ============================================================
+# 92. APPLICATION TRANSACTION BOUNDARIES
+# ============================================================
+
+title("91. Transaction Boundaries")
+
+explain("""
+A transaction boundary defines which operations must succeed or fail
+together.
+
+For an order:
+
+    create order
+    create order items
+    reduce inventory
+    record payment state
+
+The exact boundary depends on business requirements.
+
+A transaction that is too small can leave related changes inconsistent.
+
+A transaction that is unnecessarily large can increase locking,
+contention and rollback cost.
+""")
+
+
+# ============================================================
+# 93. IDEMPOTENCY
+# ============================================================
+
+title("92. Idempotency")
+
+explain("""
+An operation is idempotent when repeating it produces the same intended
+result as performing it once.
+
+This matters in distributed systems because requests may be retried.
+
+For example, creating a payment using a unique payment request ID
+can prevent accidental duplicate processing.
+
+Database uniqueness constraints and UPSERT operations are often
+important components of idempotent design.
+""")
+
+
+# ============================================================
+# 94. DATABASE TESTING
+# ============================================================
+
+title("93. Database Testing")
+
+explain("""
+Database tests should verify both successful behavior and failure
+behavior.
+
+Important tests include:
+
+    constraint tests
+    foreign key tests
+    transaction tests
+    rollback tests
+    uniqueness tests
+    migration tests
+    query result tests
+    concurrency tests
+    performance tests
+
+A test should verify not only that valid data can be inserted but
+also that invalid data is rejected.
+""")
+
+
+# ============================================================
+# 95. DATABASE OBSERVABILITY
+# ============================================================
+
+title("94. Database Observability")
+
+explain("""
+Database observability involves understanding system behavior through
+metrics, logs and traces.
+
+Useful measurements include:
+
+    query latency
+    transaction latency
+    throughput
+    connection count
+    lock waits
+    deadlocks
+    cache hit ratio
+    replication lag
+    disk utilization
+    storage growth
+
+Slow-query analysis is especially important in production systems.
+""")
+
+
+# ============================================================
+# 96. QUERY DESIGN
+# ============================================================
+
+title("95. Query Design")
+
+explain("""
+Good SQL query design begins with a precise question.
+
+Before writing SQL, determine:
+
+    What entities are required?
+    What columns are required?
+    What relationships are required?
+    Which rows qualify?
+    Is aggregation required?
+    Is ordering required?
+    Can duplicates occur?
+    What should happen with NULL?
+    What is the expected data volume?
+
+A correct query is more important than a clever query.
+""")
+
+
+# ============================================================
+# 97. PERFORMANCE
+# ============================================================
+
+title("96. Database Performance")
+
+explain("""
+Database performance depends on several factors:
+
+    query structure
+    indexes
+    data volume
+    cardinality
+    selectivity
+    join strategy
+    memory
+    disk I/O
+    CPU
+    concurrency
+    network latency
+    connection management
+
+A query that is fast on 1,000 rows may behave very differently
+on 100 million rows.
+
+Performance analysis should therefore consider realistic data volume.
+""")
+
+
+# ============================================================
+# 98. COMMON PERFORMANCE PROBLEMS
+# ============================================================
+
+title("97. Common Performance Problems")
+
+explain("""
+Frequent database performance problems include:
+
+    missing indexes
+    excessive indexes
+    SELECT *
+    unnecessary joins
+    inefficient pagination
+    N+1 queries
+    functions preventing index usage
+    large unfiltered scans
+    excessive network round trips
+    oversized transactions
+    poor connection management
+    bad join conditions
+    unnecessary DISTINCT
+    inefficient sorting
+""")
+
+
+# ============================================================
+# 99. OFFSET PAGINATION
+# ============================================================
+
+title("98. Pagination")
+
+explain("""
+Traditional pagination often uses:
+
+    LIMIT
+    OFFSET
 
 For example:
 
-```text
-Goal 1:
-Minimize travel time.
+    LIMIT 20 OFFSET 1000
 
-Goal 2:
-Maximize safety.
-```
+As OFFSET becomes large, the database may need to process and discard
+many preceding rows.
 
-A very fast route may be less safe.
+Keyset or cursor pagination can be more efficient for large datasets.
 
-A very safe route may take considerably longer.
+Example concept:
 
-A utility function can encode this trade-off:
+    WHERE id > last_seen_id
+    ORDER BY id
+    LIMIT 20
+""")
 
-```text
-U =
-0.4 × speed
-+
-0.6 × safety
-```
 
-The weights indicate the relative importance of the objectives.
+# ============================================================
+# 100. APPLICATION ARCHITECTURE
+# ============================================================
 
-This is one reason utility-based agents are more expressive than simple goal-based agents.
+title("99. Database in Application Architecture")
 
----
+explain("""
+A typical backend architecture may look like:
 
-# 55. Information as a Decision
+    Client
+       |
+       v
+    API
+       |
+       v
+    Application Service
+       |
+       v
+    Repository / Data Access Layer
+       |
+       v
+    Database
 
-An intelligent agent may decide to gather information before taking an action.
+The database is responsible for durable data and integrity.
 
-Suppose a robot is uncertain about which route is safer.
+The application is responsible for business workflows and orchestration.
 
-It can:
+The exact division depends on system requirements.
+""")
 
-```text
-Act immediately
-```
+
+# ============================================================
+# 101. DATABASE DESIGN PROCESS
+# ============================================================
+
+title("100. Database Design Process")
+
+explain("""
+A practical database design process can be expressed as:
+
+    1. Identify business entities.
+    2. Identify attributes.
+    3. Identify relationships.
+    4. Identify candidate keys.
+    5. Select primary keys.
+    6. Define foreign keys.
+    7. Define constraints.
+    8. Normalize the structure.
+    9. Identify major access patterns.
+    10. Add appropriate indexes.
+    11. Define transaction boundaries.
+    12. Consider security.
+    13. Consider backup and recovery.
+    14. Test realistic workloads.
+
+Database design is therefore both a modeling problem and an operational
+problem.
+""")
+
+
+# ============================================================
+# 102. PRACTICAL E-COMMERCE DATABASE
+# ============================================================
+
+title("101. Practical E-Commerce Database Model")
+
+explain("""
+A basic e-commerce system may contain:
+
+    customers
+    addresses
+    products
+    categories
+    inventory
+    orders
+    order_items
+    payments
+    shipments
+    coupons
+    reviews
+
+Relationships:
+
+    customer -> orders
+    order -> order_items
+    product -> order_items
+    order -> payment
+    order -> shipment
+    product -> reviews
+    customer -> reviews
+
+Each relationship should be represented using appropriate keys and
+constraints.
+""")
+
+
+# ============================================================
+# 103. ORDER TOTALS
+# ============================================================
+
+title("102. Calculating Order Totals")
+
+execute_and_show(
+    connection,
+    """
+    SELECT
+        o.order_id,
+        SUM(oi.quantity * oi.unit_price) AS calculated_total
+    FROM orders AS o
+    JOIN order_items AS oi
+        ON o.order_id = oi.order_id
+    GROUP BY o.order_id
+    ORDER BY o.order_id
+    """
+)
+
+
+# ============================================================
+# 104. CUSTOMER SPENDING
+# ============================================================
+
+title("103. Customer Spending")
+
+execute_and_show(
+    connection,
+    """
+    SELECT
+        c.customer_id,
+        c.name,
+        COALESCE(SUM(o.total_amount), 0) AS total_spending
+    FROM customers AS c
+    LEFT JOIN orders AS o
+        ON c.customer_id = o.customer_id
+    GROUP BY c.customer_id, c.name
+    ORDER BY total_spending DESC
+    """
+)
+
+
+# ============================================================
+# 105. COALESCE
+# ============================================================
+
+title("104. COALESCE")
+
+explain("""
+COALESCE returns the first non-NULL expression.
+
+For example:
+
+    COALESCE(total, 0)
+
+means:
+
+    use total if it exists
+    otherwise use 0
+
+It is particularly useful with aggregate functions and LEFT JOINs.
+""")
+
+
+# ============================================================
+# 106. NULLIF
+# ============================================================
+
+title("105. NULLIF")
+
+explain("""
+NULLIF returns NULL when two expressions are equal.
+
+A common use is avoiding division by zero:
+
+    value / NULLIF(denominator, 0)
+
+This converts a zero denominator to NULL rather than attempting
+division by zero.
+""")
+
+
+# ============================================================
+# 107. CONSTRAINT-BASED DESIGN
+# ============================================================
+
+title("106. Constraint-Based Design")
+
+explain("""
+A strong database design expresses important business invariants
+through constraints whenever possible.
+
+Examples:
+
+    price >= 0
+    quantity >= 0
+    email UNIQUE
+    order.customer_id must exist
+    order_item.quantity > 0
+
+The database becomes an active participant in maintaining correctness
+rather than merely acting as passive storage.
+""")
+
+
+# ============================================================
+# 108. STORED PROCEDURES
+# ============================================================
+
+title("107. Stored Procedures and Functions")
+
+explain("""
+Some relational database systems support stored procedures and
+stored functions.
+
+They allow reusable logic to execute inside the database server.
+
+Examples include:
+
+    PostgreSQL functions
+    SQL Server stored procedures
+    Oracle PL/SQL procedures
+
+SQLite does not provide server-side stored procedures in the same
+way.
+
+Stored procedures can be useful for:
+
+    complex database-side operations
+    controlled access
+    reusable calculations
+    transactional workflows
+
+They can also make application architecture harder to understand
+if excessive business logic is hidden inside the database.
+""")
+
+
+# ============================================================
+# 109. DATABASE ROLES
+# ============================================================
+
+title("108. Users, Roles and Permissions")
+
+explain("""
+Server-based relational databases commonly provide:
+
+    users
+    roles
+    privileges
+
+Privileges can include:
+
+    SELECT
+    INSERT
+    UPDATE
+    DELETE
+    EXECUTE
+
+A role groups permissions.
+
+For example:
+
+    reporting_role
+    application_role
+    administrator_role
+
+SQLite does not provide the same server-side user and role system.
+""")
+
+
+# ============================================================
+# 110. DATABASE RELIABILITY
+# ============================================================
+
+title("109. Reliability")
+
+explain("""
+Database reliability depends on more than transaction semantics.
+
+It includes:
+
+    hardware reliability
+    storage reliability
+    backups
+    replication
+    monitoring
+    recovery procedures
+    schema management
+    capacity planning
+    failure testing
+
+A database can provide ACID transactions and still be operationally
+unreliable if backups are missing or recovery procedures are never tested.
+""")
+
+
+# ============================================================
+# 111. AVAILABILITY
+# ============================================================
+
+title("110. Availability")
+
+explain("""
+Availability describes whether the database service can respond to
+requests when needed.
+
+Availability strategies can include:
+
+    replication
+    failover
+    clustering
+    redundancy
+    health checks
+    automated recovery
+
+Higher availability usually introduces additional architectural and
+operational complexity.
+""")
+
+
+# ============================================================
+# 112. DURABILITY
+# ============================================================
+
+title("111. Durability")
+
+explain("""
+Durability means that committed data is intended to survive failures
+according to the database's configured durability guarantees.
+
+Durability can depend on:
+
+    transaction logs
+    fsync behavior
+    storage hardware
+    replication
+    backup systems
+    operating system behavior
+
+A successful COMMIT does not mean that every possible disaster is
+automatically recoverable.
+""")
+
+
+# ============================================================
+# 113. DATABASE ADMINISTRATION
+# ============================================================
+
+title("112. Database Administration")
+
+explain("""
+Database administration involves operational responsibilities such as:
+
+    installation
+    configuration
+    backups
+    recovery
+    monitoring
+    indexing
+    security
+    capacity planning
+    upgrades
+    replication
+    troubleshooting
+
+A DBA must understand both database internals and operational risk.
+""")
+
+
+# ============================================================
+# 114. RELATIONAL ALGEBRA
+# ============================================================
+
+title("113. Relational Algebra")
+
+explain("""
+Relational algebra provides a mathematical foundation for relational
+query processing.
+
+Important operations include:
+
+    selection
+    projection
+    union
+    difference
+    Cartesian product
+    join
+
+SQL is a practical declarative language influenced by relational
+theory, although SQL includes features that extend beyond classical
+relational algebra.
+""")
+
+
+# ============================================================
+# 115. DECLARATIVE SQL
+# ============================================================
+
+title("114. Declarative Nature of SQL")
+
+explain("""
+SQL is primarily declarative.
+
+In imperative programming, the programmer describes how to perform
+an operation step by step.
+
+In SQL, the programmer generally describes what result is required.
+
+The database optimizer determines an execution strategy.
+
+This separation allows the database engine to change execution plans
+without requiring the application to manually implement every access
+algorithm.
+""")
+
+
+# ============================================================
+# 116. QUERY OPTIMIZER
+# ============================================================
+
+title("115. Query Optimizer")
+
+explain("""
+A query optimizer evaluates possible execution strategies.
+
+It can consider:
+
+    indexes
+    join order
+    join algorithms
+    filtering
+    statistics
+    sorting
+    estimated row counts
+
+The optimizer attempts to choose a plan with acceptable cost.
+
+Database statistics help the optimizer estimate data distribution.
+""")
+
+
+# ============================================================
+# 117. JOIN ALGORITHMS
+# ============================================================
+
+title("116. Join Algorithms")
+
+explain("""
+Common join algorithms include:
+
+    nested loop join
+    hash join
+    merge join
+
+The availability and implementation of these algorithms depend on
+the database engine.
+
+A nested loop can be effective when one side is small and the other
+side has a suitable index.
+
+A hash join can be useful for equality joins on large datasets.
+
+A merge join can be effective when inputs are appropriately sorted.
+""")
+
+
+# ============================================================
+# 118. TEMPORARY TABLES
+# ============================================================
+
+title("117. Temporary Tables")
+
+explain("""
+Temporary tables store intermediate data for a limited scope.
+
+They can be useful when:
+
+    an intermediate result is reused
+    a complex transformation needs stages
+    repeated calculations are expensive
+
+Temporary tables differ from CTEs because a temporary table creates
+a database object containing materialized rows, while a CTE primarily
+provides query structure.
+""")
+
+
+# ============================================================
+# 119. MATERIALIZED VIEWS
+# ============================================================
+
+title("118. Materialized Views")
+
+explain("""
+A materialized view stores the result of a query.
+
+Unlike a normal view, the result is physically stored.
+
+Advantages:
+
+    faster repeated reads
+    useful for expensive aggregations
+
+Cost:
+
+    stored results must be refreshed
+
+PostgreSQL supports materialized views.
+
+SQLite does not provide native materialized views in the same way.
+""")
+
+
+# ============================================================
+# 120. DATABASE DIALECTS
+# ============================================================
+
+title("119. SQL Dialects")
+
+explain("""
+SQL is standardized, but database systems implement different
+dialects and extensions.
+
+Examples of differences include:
+
+    pagination syntax
+    date functions
+    JSON operators
+    generated columns
+    procedural languages
+    indexing features
+    transaction behavior
+    isolation implementation
+    upsert syntax
+
+Therefore SQL knowledge includes both general SQL principles and
+engine-specific knowledge.
+""")
+
+
+# ============================================================
+# 121. SQLITE FOREIGN KEY VERIFICATION
+# ============================================================
+
+title("120. Foreign Key Enforcement")
+
+explain("""
+SQLite requires foreign key enforcement to be enabled explicitly
+for connections.
+
+The setting used earlier was:
+
+    PRAGMA foreign_keys = ON
+
+Without enforcement, foreign-key declarations may not provide the
+expected protection.
+""")
+
+foreign_key_state = connection.execute(
+    "PRAGMA foreign_keys"
+).fetchone()
+
+print("Foreign key enforcement:", foreign_key_state[0])
+
+
+# ============================================================
+# 122. TRANSACTION SAFETY EXAMPLE
+# ============================================================
+
+title("121. Transaction Safety Example")
+
+explain("""
+The following example demonstrates how a transaction can prevent
+partial completion of a multi-step operation.
+
+The transaction intentionally raises an error so that the changes
+are rolled back.
+""")
+
+try:
+    connection.execute("BEGIN")
+
+    connection.execute("""
+        UPDATE accounts
+        SET balance = balance - 100
+        WHERE account_id = 1
+    """)
+
+    raise RuntimeError("Simulated application failure")
+
+    connection.execute("""
+        UPDATE accounts
+        SET balance = balance + 100
+        WHERE account_id = 2
+    """)
+
+    connection.commit()
+
+except Exception as error:
+    print("Transaction failed:", error)
+    connection.rollback()
+
+execute_and_show(
+    connection,
+    "SELECT * FROM accounts"
+)
+
+
+# ============================================================
+# 123. CONSTRAINT FAILURE
+# ============================================================
+
+title("122. Constraint Failure")
+
+explain("""
+A database constraint should reject invalid data.
+
+The following attempt violates the CHECK constraint because
+quantity cannot be negative.
+""")
+
+try:
+    connection.execute("""
+        INSERT INTO constrained_products
+        (id, name, price, sku, quantity)
+        VALUES (?, ?, ?, ?, ?)
+    """, (99, "Invalid Product", 100, "INVALID-1", -5))
+
+    connection.commit()
+
+except sqlite3.IntegrityError as error:
+    print("Constraint rejected the data:", error)
+    connection.rollback()
+
+
+# ============================================================
+# 124. UNIQUE CONSTRAINT
+# ============================================================
+
+title("123. UNIQUE Constraint")
+
+explain("""
+UNIQUE prevents duplicate values for a constrained column or
+combination of columns.
+
+It is useful for business identifiers such as:
+
+    email
+    username
+    SKU
+
+A UNIQUE constraint is different from a primary key because a table
+has one primary key definition, while it can have multiple UNIQUE
+constraints.
+""")
+
+try:
+    connection.execute("""
+        INSERT INTO constrained_products
+        (id, name, price, sku, quantity)
+        VALUES (?, ?, ?, ?, ?)
+    """, (100, "Another Product", 200, "DUPLICATE", 5))
+
+    connection.execute("""
+        INSERT INTO constrained_products
+        (id, name, price, sku, quantity)
+        VALUES (?, ?, ?, ?, ?)
+    """, (101, "Duplicate SKU", 300, "DUPLICATE", 4))
+
+    connection.commit()
+
+except sqlite3.IntegrityError as error:
+    print("Unique constraint rejected the duplicate:", error)
+    connection.rollback()
+
+
+# ============================================================
+# 125. GENERATED IDENTIFIERS
+# ============================================================
+
+title("124. Generated Identifiers")
+
+explain("""
+Many databases support automatically generated identifiers.
+
+Common approaches include:
+
+    auto-incrementing integers
+    identity columns
+    sequences
+    UUIDs
+
+SQLite's INTEGER PRIMARY KEY has special behavior that allows the
+database to generate integer row identifiers.
+
+The correct identifier strategy depends on:
+
+    scale
+    distribution
+    replication
+    ordering requirements
+    security considerations
+    application architecture
+""")
+
+
+# ============================================================
+# 126. TIME AND DATE DATA
+# ============================================================
+
+title("125. Dates and Times")
+
+explain("""
+Date and time handling is a frequent source of database errors.
+
+Important concepts include:
+
+    date
+    time
+    timestamp
+    time zone
+    UTC
+    local time
+    daylight saving changes
+
+Applications should establish clear rules for storage and conversion.
+
+SQLite does not have a dedicated timestamp storage type comparable
+to some server databases. Dates and times are commonly stored as
+TEXT, REAL or INTEGER depending on the chosen representation.
+""")
+
+
+# ============================================================
+# 127. DATA CONSISTENCY
+# ============================================================
+
+title("126. Consistency")
+
+explain("""
+Consistency means that database operations preserve defined rules.
+
+Examples:
+
+    foreign keys remain valid
+    balances do not become negative
+    required values are present
+    unique identifiers remain unique
+
+Consistency can be enforced through:
+
+    constraints
+    transactions
+    application logic
+    triggers
+    database procedures
+    architecture
+""")
+
+
+# ============================================================
+# 128. DATABASE LIFECYCLE
+# ============================================================
+
+title("127. Data Lifecycle")
+
+explain("""
+Database data has a lifecycle.
+
+A record may move through stages such as:
+
+    creation
+    modification
+    active use
+    archival
+    retention
+    deletion
+
+Lifecycle policies matter for:
+
+    storage cost
+    performance
+    legal requirements
+    security
+    recovery
+    historical analysis
+""")
+
+
+# ============================================================
+# 129. DATABASE VS FILE SYSTEM
+# ============================================================
+
+title("128. Database Compared with Files")
+
+explain("""
+Files are excellent for many tasks.
+
+A database becomes particularly useful when requirements include:
+
+    structured querying
+    concurrent access
+    transactions
+    relationships
+    constraints
+    indexes
+    recovery
+    authorization
+    scalable data management
+
+The choice depends on the problem.
+
+A database is not automatically the right tool for every storage task.
+""")
+
+
+# ============================================================
+# 130. PRACTICAL QUERY
+# ============================================================
+
+title("129. Practical Business Query")
+
+explain("""
+The following query answers:
+
+    Which customers have placed orders and how much have they spent?
+""")
+
+execute_and_show(
+    connection,
+    """
+    SELECT
+        c.customer_id,
+        c.name,
+        COUNT(o.order_id) AS order_count,
+        SUM(o.total_amount) AS total_spending
+    FROM customers AS c
+    JOIN orders AS o
+        ON c.customer_id = o.customer_id
+    GROUP BY
+        c.customer_id,
+        c.name
+    ORDER BY total_spending DESC
+    """
+)
+
+
+# ============================================================
+# 131. PRACTICAL PRODUCT QUERY
+# ============================================================
+
+title("130. Products Never Ordered")
+
+explain("""
+A common relational question is:
+
+    Which products have never appeared in an order?
+
+A LEFT JOIN can expose missing relationships.
+""")
+
+execute_and_show(
+    connection,
+    """
+    SELECT
+        p.product_id,
+        p.product_name
+    FROM products AS p
+    LEFT JOIN order_items AS oi
+        ON p.product_id = oi.product_id
+    WHERE oi.product_id IS NULL
+    """
+)
+
+
+# ============================================================
+# 132. ANTI-JOIN CONCEPT
+# ============================================================
+
+title("131. Anti-Join")
+
+explain("""
+An anti-join finds rows for which no matching row exists.
+
+SQL commonly expresses this through:
+
+    LEFT JOIN ... IS NULL
 
 or:
 
-```text
-Inspect the environment first
-```
+    NOT EXISTS
 
-Inspection has a cost:
+NOT EXISTS is often clearer when the intent is explicitly to test
+for absence of a related record.
+""")
 
-* time
-* energy
-* computation
-* risk
+execute_and_show(
+    connection,
+    """
+    SELECT
+        p.product_id,
+        p.product_name
+    FROM products AS p
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM order_items AS oi
+        WHERE oi.product_id = p.product_id
+    )
+    """
+)
 
-But it can also have information value.
 
-The relevant question becomes:
+# ============================================================
+# 133. EXISTS VS IN
+# ============================================================
 
-```text
-Is the expected value of additional information greater than
-the cost of obtaining it?
-```
+title("132. EXISTS and IN")
 
-This turns information gathering itself into a decision problem.
+explain("""
+IN checks whether a value belongs to a set of values.
 
----
+EXISTS checks whether a related query produces at least one row.
 
-# 56. Complete Agent Decision Pipeline
+The optimizer may transform these queries internally, but their
+semantics and NULL behavior can differ.
 
-A generalized intelligent-agent decision process can be represented as:
+Query clarity and correct handling of NULL should be considered.
+""")
 
-```text
-1. Perception
-      ↓
-2. State estimation
-      ↓
-3. Goal identification
-      ↓
-4. Action generation
-      ↓
-5. Prediction
-      ↓
-6. Evaluation
-      ↓
-7. Decision
-      ↓
-8. Execution
-      ↓
-9. Feedback
-      ↓
-10. State/model update
-      ↓
-Repeat
-```
 
-Each stage addresses a different aspect of intelligent behavior.
+# ============================================================
+# 134. DATABASE DESIGN TRADE-OFFS
+# ============================================================
 
-### Perception
+title("133. Database Design Trade-Offs")
 
-What information is available?
+explain("""
+Database design contains trade-offs.
 
-### State estimation
+Normalization versus denormalization.
 
-What does the agent believe the current state is?
+Read performance versus write simplicity.
 
-### Goal identification
+Strong consistency versus distributed availability.
 
-What condition should be achieved?
+Flexible JSON versus strongly modeled columns.
 
-### Action generation
+Application logic versus database-side logic.
 
-What can the agent do?
+Simple architecture versus specialized scaling.
 
-### Prediction
+There is no universal database design that is optimal for every
+workload.
+""")
 
-What might happen after each action?
 
-### Evaluation
+# ============================================================
+# 135. DATABASE TEST DATABASE
+# ============================================================
 
-How desirable or costly are the possible outcomes?
+title("134. Testing Isolation")
 
-### Decision
+explain("""
+Tests often require isolated database state.
 
-Which action is rational according to the chosen criterion?
+An in-memory SQLite database is useful for small automated tests
+because it can be created and destroyed quickly.
 
-### Execution
+For production database compatibility, tests should also be run
+against the actual database engine when engine-specific behavior
+matters.
+""")
 
-Perform the selected action.
 
-### Feedback
+# ============================================================
+# 136. ERROR HANDLING
+# ============================================================
 
-Observe what actually happened.
+title("135. Database Error Handling")
 
-### Update
+explain("""
+Database operations can fail for many reasons:
 
-Revise internal knowledge or state.
+    constraint violations
+    connection failures
+    timeouts
+    deadlocks
+    serialization failures
+    disk errors
+    syntax errors
+    unavailable database
+    network failures
 
----
+Applications should distinguish expected data errors from transient
+infrastructure errors.
+""")
 
-# 57. Delivery Robot Example
 
-Consider a delivery robot.
+# ============================================================
+# 137. RETRIES
+# ============================================================
 
-## State
+title("136. Transaction Retries")
 
-The state may include:
+explain("""
+Some database failures are transient.
 
-```text
-position
-battery
-package status
-time
-known obstacles
-```
+Examples:
 
-## Actions
+    deadlock victim
+    serialization conflict
+    temporary connection failure
 
-```text
-move
-recharge
-pick up
-drop off
-wait
-```
+A retry can be appropriate when the operation is safe to repeat.
 
-## Goal
+Retry logic must be combined with idempotency so that repeating the
+operation does not accidentally create duplicate business effects.
+""")
 
-```text
-Deliver the package.
-```
 
-## Utility
+# ============================================================
+# 138. CONNECTION LIFECYCLE
+# ============================================================
 
-The robot may prefer:
+title("137. Connection Lifecycle")
 
-```text
-safe delivery
-short delivery time
-low energy consumption
-low cost
-```
+explain("""
+A database connection generally follows this lifecycle:
 
-## Environment
+    open connection
+    begin or enter transaction
+    execute statements
+    commit or rollback
+    release connection
 
-The environment may contain:
+Long-lived transactions can hold locks or snapshots and may cause
+resource pressure.
 
-```text
-roads
-people
-obstacles
-other robots
-weather
-```
+Connections should therefore be managed deliberately.
+""")
 
-## Decision process
 
-```text
-Perceive environment
-        ↓
-Estimate current state
-        ↓
-Identify goal
-        ↓
-Generate possible actions
-        ↓
-Predict consequences
-        ↓
-Calculate costs/utilities
-        ↓
-Choose rational action
-        ↓
-Execute
-        ↓
-Observe result
-        ↓
-Update state
-```
+# ============================================================
+# 139. TRANSACTION CONTEXT MANAGER
+# ============================================================
 
-This example connects the central concepts into one agent model.
+title("138. Python Transaction Context")
 
----
+explain("""
+Python's sqlite3 connection can be used as a context manager.
 
-# 58. Central Relationships
+This makes transaction handling easier to structure.
 
-The concepts are closely connected.
+The example below demonstrates the pattern conceptually.
+""")
 
-## State
+transaction_connection = sqlite3.connect(":memory:")
 
-Describes the current relevant condition.
+transaction_connection.execute("""
+CREATE TABLE example (
+    id INTEGER PRIMARY KEY,
+    value TEXT NOT NULL
+)
+""")
 
-## Action
+try:
+    with transaction_connection:
+        transaction_connection.execute(
+            "INSERT INTO example(value) VALUES (?)",
+            ("transactional value",)
+        )
+except sqlite3.Error as error:
+    print("Database error:", error)
 
-Changes the state.
+execute_and_show(
+    transaction_connection,
+    "SELECT * FROM example"
+)
 
-## Transition model
+transaction_connection.close()
 
-Describes how actions change states.
 
-## Goal
+# ============================================================
+# 140. PRODUCTION ARCHITECTURE
+# ============================================================
 
-Defines a desired state or condition.
+title("139. Production Database Architecture")
 
-## Search
+explain("""
+A production system may contain:
 
-Finds sequences of actions that can reach a goal.
+    application servers
+    connection pools
+    primary database
+    read replicas
+    cache
+    backup storage
+    monitoring
+    log aggregation
+    disaster recovery infrastructure
 
-## Path cost
+The database architecture should be designed around:
 
-Measures the cumulative cost of a sequence of actions.
+    workload
+    consistency
+    availability
+    latency
+    recovery requirements
+    security
+    cost
+""")
 
-## Heuristic
 
-Estimates the remaining cost to guide search.
+# ============================================================
+# 141. DATABASE CACHE
+# ============================================================
 
-## Utility
+title("140. Database Caching")
 
-Measures preference among possible outcomes.
+explain("""
+Caching stores frequently accessed data in a faster layer.
 
-## Rationality
+A cache can reduce repeated database reads.
 
-Selects the action expected to provide the best performance according to available information.
+Caching introduces its own problems:
 
-## Environment
+    stale data
+    invalidation
+    memory limits
+    consistency
+    cache stampedes
 
-Determines what the agent can perceive and how its actions affect the world.
+A database should not automatically be bypassed with a cache.
+The caching strategy should correspond to actual access patterns.
+""")
 
-## Agent architecture
 
-Determines how perception, state, goals, utility, learning and action selection are implemented.
+# ============================================================
+# 142. DATABASE SCALING
+# ============================================================
 
----
+title("141. Vertical and Horizontal Scaling")
 
-# 59. Core Mathematical Vocabulary
+explain("""
+Vertical scaling means increasing the resources of a database server:
 
-Several mathematical expressions capture the basic ideas.
+    CPU
+    RAM
+    storage
+    I/O capacity
 
-### Agent function
+Horizontal scaling means distributing work across multiple systems.
 
-```text
-f(percept sequence) = action
-```
+Examples:
 
-### Deterministic transition
+    read replicas
+    sharding
+    distributed databases
 
-```text
-RESULT(state, action) = next_state
-```
+Vertical scaling is often simpler.
 
-### Stochastic transition
+Horizontal scaling can support larger workloads but introduces
+architectural complexity.
+""")
 
-```text
-P(next_state | state, action)
-```
 
-### Heuristic
+# ============================================================
+# 143. READ REPLICAS
+# ============================================================
 
-```text
-h(n)
-```
+title("142. Read Replicas")
 
-### Path cost
+explain("""
+A read replica maintains a copy of data from a primary database.
 
-```text
-g(n)
-```
+Applications may route:
 
-### A* evaluation
+    writes -> primary
+    reads  -> replicas
 
-```text
-f(n) = g(n) + h(n)
-```
+This can increase read capacity.
 
-### Expected utility
+Replication lag means a replica may temporarily return older data.
 
-```text
-EU(a)
-=
-Σ P(outcome | a) U(outcome)
-```
+Applications must therefore understand whether a particular read
+requires the latest committed value.
+""")
 
-### Rational decision
 
-```text
-a* = argmax EU(a)
-```
+# ============================================================
+# 144. EVENTUAL CONSISTENCY
+# ============================================================
 
-### Policy
+title("143. Eventual Consistency")
 
-```text
-π(s) = action
-```
+explain("""
+Eventual consistency means that replicas or distributed components
+may temporarily contain different states but are expected to converge.
 
-### Discounted cumulative reward
+This model can be useful for distributed systems where low latency
+and availability are important.
 
-```text
-G =
-R1
-+ γR2
-+ γ²R3
-+ ...
-```
+It changes application design because users may temporarily observe
+stale information.
+""")
 
----
 
-# 60. Conceptual Comparison
+# ============================================================
+# 145. DATABASE MIGRATION COMPATIBILITY
+# ============================================================
 
-| Concept             | Central Question                                       |
-| ------------------- | ------------------------------------------------------ |
-| Agent               | Who is making decisions?                               |
-| Environment         | Where does the agent operate?                          |
-| Percept             | What information does the agent receive?               |
-| Sensor              | How does the agent receive information?                |
-| Actuator            | How does the agent affect the environment?             |
-| State               | What condition is the world currently in?              |
-| Action              | What can the agent do?                                 |
-| Transition model    | What happens after an action?                          |
-| Goal                | What condition is desired?                             |
-| Goal test           | Has the desired condition been achieved?               |
-| Path                | What sequence of states was followed?                  |
-| Path cost           | What did the sequence cost?                            |
-| Search              | How can possible solutions be explored?                |
-| Heuristic           | Which possibilities appear promising?                  |
-| Utility             | How desirable is an outcome?                           |
-| Rationality         | Which action is expected to perform best?              |
-| Policy              | What action should be taken in each state?             |
-| Belief state        | What does the agent believe the hidden state might be? |
-| Learning            | How can the agent improve from experience?             |
-| Performance measure | How is behavior evaluated?                             |
+title("144. Backward-Compatible Schema Changes")
 
----
+explain("""
+A schema migration can affect old and new versions of an application.
 
-# 61. The Complete AI Problem-Solving Model
+A safer deployment pattern is often:
 
-The complete conceptual model can be expressed as:
+    expand
+    migrate
+    switch
+    contract
 
-```text
-                         ENVIRONMENT
-                              |
-                              v
-                           PERCEPT
-                              |
-                              v
-                            AGENT
-                              |
-                +-------------+-------------+
-                |                           |
-                v                           v
-          CURRENT STATE                    GOAL
-                |                           |
-                +-------------+-------------+
-                              |
-                              v
-                           ACTIONS
-                              |
-                              v
-                       TRANSITION MODEL
-                              |
-                              v
-                      POSSIBLE OUTCOMES
-                              |
-                              v
-                       COST / UTILITY
-                              |
-                              v
-                    RATIONAL DECISION
-                              |
-                              v
-                            ACTION
-                              |
-                              v
-                         ENVIRONMENT
-                              |
-                              v
-                       NEW PERCEPT
-                              |
-                              v
-                           REPEAT
-```
+For example:
 
-The central idea is that an intelligent agent does not simply execute arbitrary actions. It operates within an environment, receives percepts, maintains or estimates a state, considers available actions, predicts their consequences, evaluates those consequences against goals or utilities, selects an action according to a rational decision criterion, and then observes the resulting environment.
+    add a new nullable column
+    deploy application that writes both fields
+    backfill old records
+    switch reads
+    remove the old field later
 
-State provides the representation of the current situation.
+This reduces the risk of deploying an application and database
+change that cannot coexist.
+""")
 
-Actions provide mechanisms for changing that situation.
 
-Goals define desired conditions.
+# ============================================================
+# 146. DATABASE ANTI-PATTERNS
+# ============================================================
 
-Search provides methods for discovering action sequences that reach those conditions.
+title("145. Database Anti-Patterns")
 
-Costs provide a way to compare the resources required by alternative solutions.
+explain("""
+Common database anti-patterns include:
 
-Utility provides a richer representation of preference when successful outcomes differ in quality or when objectives conflict.
+    storing unrelated entities in one giant table
+    using comma-separated values for relationships
+    ignoring foreign keys
+    using SELECT * everywhere
+    creating indexes without workload analysis
+    creating too many indexes
+    building SQL with string concatenation
+    keeping transactions open unnecessarily
+    ignoring NULL semantics
+    relying entirely on application-side integrity
+    storing every attribute as TEXT
+    hiding critical logic in excessive triggers
+    using soft deletes without query discipline
+    ignoring migration compatibility
+""")
 
-Rationality connects all of these elements by defining how an agent should select actions given its information, objectives, available actions and limitations.
+
+# ============================================================
+# 147. RELATIONAL INTEGRITY EXAMPLE
+# ============================================================
+
+title("146. Referential Integrity Demonstration")
+
+explain("""
+The following statement attempts to insert an order referencing a
+customer that does not exist.
+
+Foreign key enforcement should reject it.
+""")
+
+try:
+    connection.execute("""
+        INSERT INTO orders
+        (order_id, customer_id, order_date, status, total_amount)
+        VALUES (?, ?, ?, ?, ?)
+    """, (999, 999999, "2026-03-01", "PENDING", 100))
+
+    connection.commit()
+
+except sqlite3.IntegrityError as error:
+    print("Foreign key rejected the invalid relationship:", error)
+    connection.rollback()
+
+
+# ============================================================
+# 148. DATABASE DOCUMENTATION
+# ============================================================
+
+title("147. Database Documentation")
+
+explain("""
+A useful database document can describe:
+
+    table purpose
+    column meaning
+    data type
+    nullability
+    primary key
+    foreign keys
+    constraints
+    indexes
+    expected volume
+    ownership
+    retention
+    sensitivity
+    important queries
+
+Good documentation reduces ambiguity during development and operations.
+""")
+
+
+# ============================================================
+# 149. DATA OWNERSHIP
+# ============================================================
+
+title("148. Data Ownership")
+
+explain("""
+Data ownership defines responsibility for important data.
+
+For example:
+
+    customer data -> customer domain
+    payment data  -> payment domain
+    inventory     -> inventory domain
+
+Ownership becomes particularly important in large systems where
+multiple services or teams interact with related information.
+""")
+
+
+# ============================================================
+# 150. DATABASE TERMINOLOGY
+# ============================================================
+
+title("149. Database Terminology")
+
+explain("""
+DATABASE
+
+    Organized persistent collection of data.
+
+DBMS
+
+    Software that manages databases.
+
+RDBMS
+
+    Database management system based on the relational model.
+
+TABLE
+
+    Structured collection of rows and columns.
+
+ROW
+
+    One record or tuple.
+
+COLUMN
+
+    Attribute of a record.
+
+SCHEMA
+
+    Logical definition of database structures.
+
+PRIMARY KEY
+
+    Unique identifier for rows.
+
+FOREIGN KEY
+
+    Reference from one table to another.
+
+CONSTRAINT
+
+    Rule enforced by the database.
+
+INDEX
+
+    Data structure used to improve data retrieval.
+
+QUERY
+
+    Request for information or database operation.
+
+TRANSACTION
+
+    Logical unit of database work.
+
+COMMIT
+
+    Permanently applies a transaction.
+
+ROLLBACK
+
+    Reverses uncommitted transaction changes.
+
+JOIN
+
+    Combines related rows from multiple tables.
+
+NORMALIZATION
+
+    Logical design technique for reducing redundancy and anomalies.
+
+DENORMALIZATION
+
+    Intentional redundancy for specific workload requirements.
+
+OLTP
+
+    Transaction-oriented operational workload.
+
+OLAP
+
+    Analytical workload.
+
+REPLICATION
+
+    Maintaining copies of data on multiple systems.
+
+PARTITIONING
+
+    Dividing a table into partitions.
+
+SHARDING
+
+    Distributing data across multiple database nodes.
+
+CARDINALITY
+
+    Number or relationship multiplicity of data.
+
+SELECTIVITY
+
+    Degree to which a condition narrows the candidate rows.
+
+ACID
+
+    Atomicity, Consistency, Isolation and Durability.
+
+MVCC
+
+    Multi-Version Concurrency Control.
+
+WAL
+
+    Write-Ahead Logging.
+
+RPO
+
+    Recovery Point Objective.
+
+RTO
+
+    Recovery Time Objective.
+
+ORM
+
+    Object Relational Mapping.
+
+UPSERT
+
+    Insert or update depending on conflict.
+
+CTE
+
+    Common Table Expression.
+
+DDL
+
+    Data Definition Language.
+
+DML
+
+    Data Manipulation Language.
+
+DCL
+
+    Data Control Language.
+
+TCL
+
+    Transaction Control Language.
+""")
+
+
+# ============================================================
+# 151. FINAL DATABASE STATE
+# ============================================================
+
+title("150. Inspecting the Database")
+
+explain("""
+The following statements inspect the main objects created during
+this study script.
+""")
+
+execute_and_show(
+    connection,
+    """
+    SELECT
+        name,
+        type
+    FROM sqlite_master
+    WHERE type IN ('table', 'index', 'view', 'trigger')
+    ORDER BY type, name
+    """)
+
+
+# ============================================================
+# 152. CLOSE DATABASE
+# ============================================================
+
+title("151. Closing the Database")
+
+explain("""
+A database connection should be closed when it is no longer needed.
+
+Closing the connection releases associated resources.
+""")
+
+connection.close()
+
+print("\nDatabase connection closed.")
